@@ -1,6 +1,7 @@
 package dao.interfaces;
 
 import java.util.ArrayList;
+import java.sql.Connection;
 
 import entities.Cliente;
 
