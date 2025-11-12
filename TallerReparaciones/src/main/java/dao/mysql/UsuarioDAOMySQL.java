@@ -27,47 +27,32 @@ public class UsuarioDAOMySQL implements UsuarioDAO {
         return false; // temporal
     }
 
-    @Override
-    public int insert(Usuario u) {
-    	try (Scanner sc = new Scanner(System.in)) {
-	        // Pedir datos por consola
-	        System.out.print("Introduce el ID del usuario: ");
-	        int idUsuario = sc.nextInt();
-	        sc.nextLine(); // limpiar el salto de línea
+	@Override
+	public int insert(Usuario u) {
+		int resul = 0;
+		try {
 
-	        System.out.print("Introduce el nombreUsuario: ");
-	        String nombreUsuario = sc.nextLine();
+			String sql = "INSERT INTO usuario (idUsuario, nombreUsuario, dni, password, rol) VALUES (?, ?, ?, ?, ?);";
+			PreparedStatement pst = conexion.prepareStatement(sql);
 
-	        System.out.print("Introduce el dni: ");
-	        int dni = sc.nextInt();
-	        sc.nextLine();
+			pst.setInt(1, u.getIdUsuario());
+			pst.setString(2, u.getNombreUsuario());
+			pst.setString(3, u.getDni());
+			pst.setString(4, PasswordUtils.hashPassword(u.getPassword()));
+			pst.setString(5, u.getRol());
 
-	        System.out.print("Introduce el rol: ");
-	        String rol = sc.nextLine();
-
-	        System.out.print("Introduce la contraseña: ");
-	        String password = sc.nextLine();
-
-	        
-	        String sql = "INSERT INTO persona (idEmpleado, nombre, edad, numTelefono, fechaNacimiento, password) VALUES(?, ?, ?, ?, ?, ?);";
-	        PreparedStatement pst = conexion.prepareStatement(sql);
-
-	        pst.setInt(1, idUsuario);
-	        pst.setString(2, nombreUsuario);
-	        pst.setInt(3, dni);
-	        pst.setString(4, rol);
-	        pst.setString(6, PasswordUtils.hashPassword(password));
-
-	        int resul = pst.executeUpdate();
-	        System.out.println("Resultado de inserción: " + resul);
-	    } catch (SQLException e) {
-	        System.out.println("> NOK: " + e.getMessage());
-	    } catch (Exception e) {
-	        System.out.println("> Error: " + e.getMessage());
-	    }
-		return 0;
+			resul = pst.executeUpdate();
+			System.out.println("Resultado de inserción: " + resul);
+		} catch (SQLException e) {
+			System.out.println("> NOK: " + e.getMessage());
+			resul = -1;
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
+			resul = -2;
+		}
+		return resul;
 	}
-    
+	
 
     @Override
     public ArrayList<Usuario> findall() {
@@ -80,4 +65,7 @@ public class UsuarioDAOMySQL implements UsuarioDAO {
         // Código JDBC para buscar usuario por nombre
         return null; // temporal
     }
+
+
+	
 }
