@@ -1,16 +1,45 @@
 package dao.mysql;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
+import dao.DBCconnection;
 import dao.interfaces.VehiculoDAO;
 import entities.Vehiculo;
 
 public class VehiculoDAOMySQL implements VehiculoDAO{
-
+private Connection conexion;
+	
+	public VehiculoDAOMySQL() {
+		conexion = DBCconnection.getInstance().getConnection();
+	}
+	
 	@Override
 	public int insert(Vehiculo v) {
-		//Para añadir un vehiculo
-		return 0;
+		int resul = 0;
+		try {
+
+			String sql = "INSERT INTO vehiculo (idVehiculo, matricula, marca, modelo, clienteId) VALUES (?, ?, ?, ?, ?);";
+			PreparedStatement pst = conexion.prepareStatement(sql);
+
+			pst.setInt(1, v.getIdVehiculo());
+			pst.setString(2, v.getMatricula());
+			pst.setString(3, v.getMarca());
+			pst.setString(4, v.getModelo());
+			pst.setInt(5, v.getClienteId());
+			
+			resul = pst.executeUpdate();
+			System.out.println("Resultado de inserción: " + resul);
+		} catch (SQLException e) {
+			System.out.println("> NOK: " + e.getMessage());
+			resul = -1;
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
+			resul = -2;
+		}
+		return resul;
 	}
 
 	@Override

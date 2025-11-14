@@ -2,7 +2,9 @@ package dao.mysql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -23,10 +25,42 @@ public class UsuarioDAOMySQL implements UsuarioDAO {
 	
     @Override
     public boolean login(String dni, String password) {
-        // Aquí irá el código JDBC para comprobar usuario y contraseña
-        return false; // temporal
-    }
+    	String sql = "SELECT password FROM usuario WHERE dni = ?";
+    	
+    	try (PreparedStatement pst = conexion.prepareStatement(sql);){
+    		
+    		pst.setString(1, dni);
+    		
+    		
+    		ResultSet resultado = null;
+    		
+			String passwordHashead = resultado.getString("password");
+			if (PasswordUtils.verifyPassword(password, passwordHashead)) {
+				System.out.println("> Password correcta. Adelante");
+			
+			
+		}else if (!PasswordUtils.verifyPassword("dwes123", passwordHashead)){
+			System.out.println("Contraseña incorrecta");
+		}else {
+			System.out.println("Usuario no encontrado");
+		}
+			
+		} catch (SQLException e) {
+		
+			System.out.println("> NOK: " + e.getMessage());
+			return false;
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
+			return false;
+		}
+		return false;
+    	
+}
+	
 
+	
+
+    
 	@Override
 	public int insert(Usuario u) {
 		int resul = 0;

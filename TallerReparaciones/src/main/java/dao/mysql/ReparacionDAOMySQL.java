@@ -22,7 +22,7 @@ private Connection conexion;
 		int resul = 0;
 		try {
 
-			String sql = "INSERT INTO usuario (idReparacion, descripcion, fechaEntrada, costeEstimado, vehiculoId, usuarioId) VALUES (?, ?, ?, ?, ?, ?);";
+			String sql = "INSERT INTO reparacion (idReparacion, descripcion, fechaEntrada, costeEstimado, vehiculoId, usuarioId) VALUES (?, ?, ?, ?, ?, ?);";
 			PreparedStatement pst = conexion.prepareStatement(sql);
 
 			pst.setInt(1, r.getIdReparacion());
