@@ -1,5 +1,7 @@
 package dao;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.junit.jupiter.api.Test;
 
 import dao.mysql.ClienteDAOMySQL;
@@ -23,7 +25,13 @@ class ClienteDAOTest {
 //		clienteDAO.insert(c4);
 //		Cliente c5 = new Cliente(5, "90123456A", "Diana", "611789012", "Cliente5@gmail.com");
 //		clienteDAO.insert(c5);
-
+//		
+//		Cliente pruebaUpdate = new Cliente(6, "46134275E", "Virginia", "461342756", "ClienteParaProbar@gmail.com");
+//		clienteDAO.insert(pruebaUpdate);
+//		
+		Cliente clienteCambiado = new Cliente(6, "46134275E", "Alicia", "7898475147", "ClienteParamodificar@gmail.com");
+		int res = clienteDAO.update(clienteCambiado);
+		assertEquals(res, 1);
 		
 		//Probando el eliminar un cliente partiendo de su Dni
 		//clienteDAO.delete("12345678Z");

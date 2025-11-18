@@ -47,54 +47,26 @@ private Connection conexion;
 	
 	@Override
 	public int update(Cliente c) {
+		int resul = 0;
 		try {
-			ResultSet resultado = null;
-			conexion.setAutoCommit(false);
-			String sql = "SELECT idEmpleado, nombre, edad, numTelefono FROM persona WHERE edad > ?";
 
-			PreparedStatement pst = conexion.prepareStatement(sql, ResultSet.TYPE_SCROLL_SENSITIVE, // Sensible a
-																									// cambios
-					ResultSet.CONCUR_UPDATABLE); // Permite modificar
-
-			pst.setInt(1, c.getIdCliente());
-			resultado = pst.executeQuery();
-
-			while (resultado.next()) {
-
-				pst.setString(1, c.getDni());
-		        pst.setString(2, c.getNombre());
-		        pst.setString(3, c.getTelefono());
-		        pst.setString(4, c.getEmail());
-		        pst.setInt(5, c.getIdCliente());
-				resultado.updateRow();
-
-			}
-
-			conexion.commit();
-			System.out.println("> Cambios confirmados correctamente");
-
+			String sql = "UPDATE cliente SET nombre = ? telefono = ?, email = ? WHERE dni = ?;";
+			PreparedStatement pst = conexion.prepareStatement(sql);
+				
+			
+			pst.setString(1, c.getNombre());
+			pst.setString(2, c.getTelefono());
+			pst.setString(3, c.getEmail());
+			pst.setString(4, c.getDni());
+			
+			resul = pst.executeUpdate();
+			System.out.println("Resultado de inserción: " + resul);
 		} catch (SQLException e) {
-			if (conexion != null) {
-				try {
-					conexion.rollback();
-					System.out.println("> Cambios confirmados correctamente");
-				} catch (SQLException e1) {
-					System.out.println("> NOK:" + e.getMessage());
-				}
-
-			}
-		} finally {
-			if (conexion != null) {
-				try {
-					conexion.setAutoCommit(true);
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
+			System.out.println("> NOK: " + e.getMessage());
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
 		}
-		return 0;
-
+		return resul;
 	}
 	
 	@Override
