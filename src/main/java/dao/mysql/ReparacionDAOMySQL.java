@@ -2,16 +2,12 @@ package dao.mysql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.time.LocalDate;
 import java.util.ArrayList;
 
 import dao.DBCconnection;
 import dao.interfaces.ReparacionDAO;
 import entities.Reparacion;
-import passwordUtils.PasswordUtils;
 
 public class ReparacionDAOMySQL implements ReparacionDAO {
 private Connection conexion;
@@ -25,15 +21,17 @@ private Connection conexion;
 		int resul = 0;
 		try {
 
-			String sql = "UPDATE cliente nombre = ? telefono = ?, email = ? WHERE dni = ?;";
+			String sql = "INSERT INTO reparacion (idReparacion, descripcion, fechaEntrada, costeEstimado, estado, vehiculoId, usuarioId) VALUES (?, ?, ?, ?, ?, ?, ?);";
 			PreparedStatement pst = conexion.prepareStatement(sql);
-				
+
+			pst.setInt(1, r.getIdReparacion());
+			pst.setString(2, r.getDescripcion());
+			pst.setObject(3, r.getFechaEntrada());
+			pst.setDouble(4, r.getCosteEstimado());
+			pst.setString(5, r.getEstado());
+			pst.setInt(6, r.getVehiculoId());
+			pst.setInt(7, r.getUsuarioId());
 			
-//			pst.setString(1, c.getNombre());
-//			pst.setString(2, c.getTelefono());
-//			pst.setString(3, c.getEmail());
-//			pst.setString(2, c.getDni());
-//			
 			resul = pst.executeUpdate();
 			System.out.println("Resultado de inserción: " + resul);
 		} catch (SQLException e) {
@@ -49,9 +47,28 @@ private Connection conexion;
 
 	@Override
 	public int update(Reparacion r) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+			int resul = 0;
+			try {
+
+				String sql = "UPDATE reparacion SET descripcion = ?, fechaEntrada = ?, costeEstimado = ?, estado = ? WHERE idReparacion = ?;";
+				PreparedStatement pst = conexion.prepareStatement(sql);
+					
+				
+				pst.setString(1, r.getDescripcion());
+				pst.setObject(2, r.getFechaEntrada());
+				pst.setDouble(3, r.getCosteEstimado());
+				pst.setString(4, r.getEstado());
+				pst.setInt(5, r.getIdReparacion());
+				
+				resul = pst.executeUpdate();
+				System.out.println("Resultado de inserción: " + resul);
+			} catch (SQLException e) {
+				System.out.println("> NOK: " + e.getMessage());
+			} catch (Exception e) {
+				System.out.println("> Error: " + e.getMessage());
+			}
+			return resul;
+		}
 
 	@Override
 	public int delete(Reparacion r) {

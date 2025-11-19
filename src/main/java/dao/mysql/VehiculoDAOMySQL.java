@@ -44,8 +44,25 @@ private Connection conexion;
 
 	@Override
 	public int update(Vehiculo v) {
-		// Para actualizar un vehiculo
-		return 0;
+		int resul = 0;
+		try {
+
+			String sql = "UPDATE vehiculo SET marca = ?, modelo = ? WHERE matricula = ?;";
+			PreparedStatement pst = conexion.prepareStatement(sql);
+				
+			
+			pst.setString(1, v.getMarca());
+			pst.setObject(2, v.getModelo());
+			pst.setString(3, v.getMatricula());
+			
+			resul = pst.executeUpdate();
+			System.out.println("Resultado de inserción: " + resul);
+		} catch (SQLException e) {
+			System.out.println("> NOK: " + e.getMessage());
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
+		}
+		return resul;
 	}
 
 	@Override

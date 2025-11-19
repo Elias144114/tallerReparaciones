@@ -50,7 +50,7 @@ private Connection conexion;
 		int resul = 0;
 		try {
 
-			String sql = "UPDATE cliente SET nombre = ? telefono = ?, email = ? WHERE dni = ?;";
+			String sql = "UPDATE cliente SET nombre = ?, telefono = ?, email = ? WHERE dni = ?;";
 			PreparedStatement pst = conexion.prepareStatement(sql);
 				
 			
