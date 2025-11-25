@@ -2,11 +2,13 @@ package dao.mysql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
 import dao.DBCconnection;
 import dao.interfaces.VehiculoDAO;
+import entities.Cliente;
 import entities.Vehiculo;
 
 public class VehiculoDAOMySQL implements VehiculoDAO{
@@ -88,14 +90,58 @@ private Connection conexion;
 
 	@Override
 	public ArrayList<Vehiculo> findall() {
-		//Para listar todos los vehiculos
-		return null;
+		ArrayList<Vehiculo> vehiculos = new ArrayList<>();
+	    String sql = "SELECT idVehiculo, matricula, marca, modelo, clienteId FROM Vehiculo;";
+	    try (PreparedStatement pst = conexion.prepareStatement(sql);
+	         ResultSet resul = pst.executeQuery()) {
+
+	        
+	        while (resul.next()) {
+	           
+	            Vehiculo v = new Vehiculo();
+	            v.setIdVehiculo(resul.getInt("idVehiculo"));
+	            v.setMatricula(resul.getString("matricula"));
+	            v.setMarca(resul.getString("marca"));
+	            v.setModelo(resul.getString("modelo"));
+	            v.setClienteId(resul.getInt("clienteId"));
+	            
+	            
+	            vehiculos.add(v);
+	        }
+	    } catch (SQLException e) {
+	        System.out.println("> NOK en findall: " + e.getMessage());
+	        e.printStackTrace();
+	    }
+	    return vehiculos;
 	}
 
 	@Override
-	public Vehiculo findByMatricula(String Matricula) {
-		// Para buscar en base a la matricula
-		return null;
+	public Vehiculo findByMatricula(String matricula) {
+		Vehiculo vehiculo = null;
+		String sql = "SELECT idVehiculo, matricula, marca, modelo, clienteId FROM vehiculo WHERE matricula = ?;";
+
+		try (PreparedStatement pst = conexion.prepareStatement(sql)) {
+
+			
+			pst.setString(1, matricula);
+
+			try (ResultSet resul = pst.executeQuery()) {
+				if (resul.next()) {
+					vehiculo = new Vehiculo();
+					
+				
+					vehiculo.setIdVehiculo(resul.getInt("idVehiculo"));
+					vehiculo.setMatricula(resul.getString("matricula"));
+					vehiculo.setMarca(resul.getString("marca"));
+					vehiculo.setModelo(resul.getString("modelo"));
+					vehiculo.setClienteId(resul.getInt("clienteId"));
+				}
+			}
+		} catch (SQLException e) {
+			System.out.println("> ERROR en findByMatricula: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return vehiculo;
 	}
 
 }

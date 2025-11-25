@@ -8,6 +8,8 @@ import java.util.ArrayList;
 
 import dao.DBCconnection;
 import dao.interfaces.UsuarioDAO;
+import entities.Cliente;
+import entities.Reparacion;
 import entities.Usuario;
 import passwordUtils.PasswordUtils;
 
@@ -91,16 +93,55 @@ public class UsuarioDAOMySQL implements UsuarioDAO {
 
     @Override
     public ArrayList<Usuario> findall() {
-        // Código JDBC para listar todos los usuarios
-        return new ArrayList<>(); // temporal
-    }
+    	 ArrayList<Usuario> usuarios = new ArrayList<>();
+		    String sql = "SELECT idUsuario, dni, nombreUsuario, password, rol FROM usuario;";
+		    try (PreparedStatement pst = conexion.prepareStatement(sql);
+		         ResultSet resul = pst.executeQuery()) {
 
-    @Override
-    public Usuario findByNombre(String nombre) {
-        // Código JDBC para buscar usuario por nombre
-        return null; // temporal
-    }
+		        
+		        while (resul.next()) {
+		            Usuario u = new Usuario();
+		            u.setIdUsuario(resul.getInt("idUsuario"));
+		            u.setDni(resul.getString("dni"));
+		            u.setNombreUsuario(resul.getString("nombreUsuario"));
+		            u.setPassword(resul.getString("password"));
+		            u.setRol(resul.getString("rol"));
+		            
+		            
+		            usuarios.add(u);
+		        }
+		    } catch (SQLException e) {
+		        System.out.println("> NOK en findall: " + e.getMessage());
+		        e.printStackTrace();
+		    }
+		    return usuarios;
+		}
 
-
-	
-}
+		@Override
+		public Usuario findByNombre(String nombreUsuario) {
+			Usuario usuario = null;
+	        String sql = "SELECT idUsuario, nombreUsuario, dni, password, rol FROM usuario WHERE nombreUsuario = ?;";
+	        
+	        try (PreparedStatement pst = conexion.prepareStatement(sql)) {
+	            
+	            pst.setString(1, nombreUsuario);
+	            
+	            try (ResultSet resul = pst.executeQuery()) {
+	                if (resul.next()) {
+	                    usuario = new Usuario();
+	                    
+	                    
+	                    usuario.setIdUsuario(resul.getInt("idUsuario"));
+	                    usuario.setDni(resul.getString("dni"));
+	                    usuario.setNombreUsuario(resul.getString("nombreUsuario"));
+	                    usuario.setPassword(resul.getString("password"));
+	                    usuario.setRol(resul.getString("rol"));
+	                }
+	            }
+	        } catch (SQLException e) {
+	            System.out.println("> NOK en findByNombreUsuario: " + e.getMessage());
+	            e.printStackTrace();
+	        }
+	        return usuario;
+	    }
+	}

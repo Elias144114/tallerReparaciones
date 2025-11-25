@@ -15,6 +15,11 @@ public class Cliente {
 	}
 	
 	
+	public Cliente() {
+		// TODO Auto-generated constructor stub
+	}
+
+
 	public int getIdCliente() {
 		return idCliente;
 	}

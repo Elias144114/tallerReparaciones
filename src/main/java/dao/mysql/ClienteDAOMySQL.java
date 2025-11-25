@@ -92,14 +92,54 @@ private Connection conexion;
 	
 	  @Override
 	    public ArrayList<Cliente> findall() {
-	        // Código JDBC para listar todos los Clientes
-	        return new ArrayList<>(); // temporal
-	    }
+		  ArrayList<Cliente> clientes = new ArrayList<>();
+		    String sql = "SELECT idCliente, dni, nombre, telefono, email FROM cliente;";
+		    try (PreparedStatement pst = conexion.prepareStatement(sql);
+		         ResultSet resul = pst.executeQuery()) {
+
+		        // 1. Recorrer el ResultSet
+		        while (resul.next()) {
+		            // 2. Crear un objeto Cliente por cada fila
+		            Cliente c = new Cliente();
+		            c.setIdCliente(resul.getInt("idCliente"));
+		            c.setDni(resul.getString("dni"));
+		            c.setNombre(resul.getString("nombre"));
+		            c.setTelefono(resul.getString("telefono"));
+		            c.setEmail(resul.getString("email"));
+		            
+		            
+		            clientes.add(c);
+		        }
+		    } catch (SQLException e) {
+		        System.out.println("> NOK en findall: " + e.getMessage());
+		        e.printStackTrace();
+		    }
+		    return clientes;
+		}
 	
 	  @Override
 	    public Cliente findByDni(String dni) {
-	        // Código JDBC para buscar usuario por nombre
-	        return null; // temporal
-	    }
-
+		  Cliente cliente = null;
+		    String sql = "SELECT idCliente, dni, nombre, telefono, email FROM cliente WHERE dni = ?;";
+		    
+		    try (PreparedStatement pst = conexion.prepareStatement(sql)) {
+		        
+		        pst.setString(1, dni);
+		        
+		        try (ResultSet resul = pst.executeQuery()) {
+		            if (resul.next()) {
+		                cliente = new Cliente();
+		                cliente.setIdCliente(resul.getInt("idCliente"));
+		                cliente.setDni(resul.getString("dni"));
+		                cliente.setNombre(resul.getString("nombre"));
+		                cliente.setTelefono(resul.getString("telefono"));
+		                cliente.setEmail(resul.getString("email"));
+		            }
+		        }
+		    } catch (SQLException e) {
+		        System.out.println("> NOK en findByDni: " + e.getMessage());
+		        e.printStackTrace();
+		    }
+		    return cliente;
+		}
 }

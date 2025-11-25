@@ -1,21 +1,24 @@
 package dao.mysql;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
 import dao.DBCconnection;
 import dao.interfaces.ReparacionDAO;
+import entities.Cliente;
 import entities.Reparacion;
 
 public class ReparacionDAOMySQL implements ReparacionDAO {
-private Connection conexion;
-	
+	private Connection conexion;
+
 	public ReparacionDAOMySQL() {
 		conexion = DBCconnection.getInstance().getConnection();
 	}
-	
+
 	@Override
 	public int insert(Reparacion r) {
 		int resul = 0;
@@ -26,12 +29,12 @@ private Connection conexion;
 
 			pst.setInt(1, r.getIdReparacion());
 			pst.setString(2, r.getDescripcion());
-			pst.setObject(3, r.getFechaEntrada());
+			pst.setDate(3, java.sql.Date.valueOf(r.getFechaEntrada()));
 			pst.setDouble(4, r.getCosteEstimado());
 			pst.setString(5, r.getEstado());
 			pst.setInt(6, r.getVehiculoId());
 			pst.setInt(7, r.getUsuarioId());
-			
+
 			resul = pst.executeUpdate();
 			System.out.println("Resultado de inserción: " + resul);
 		} catch (SQLException e) {
@@ -43,65 +46,106 @@ private Connection conexion;
 		}
 		return resul;
 	}
-	
 
 	@Override
 	public int update(Reparacion r) {
-			int resul = 0;
-			try {
+		int resul = 0;
+		try {
 
-				String sql = "UPDATE reparacion SET descripcion = ?, fechaEntrada = ?, costeEstimado = ?, estado = ? WHERE idReparacion = ?;";
-				PreparedStatement pst = conexion.prepareStatement(sql);
-					
-				
-				pst.setString(1, r.getDescripcion());
-				pst.setObject(2, r.getFechaEntrada());
-				pst.setDouble(3, r.getCosteEstimado());
-				pst.setString(4, r.getEstado());
-				pst.setInt(5, r.getIdReparacion());
-				
-				resul = pst.executeUpdate();
-				System.out.println("Resultado de inserción: " + resul);
-			} catch (SQLException e) {
-				System.out.println("> NOK: " + e.getMessage());
-			} catch (Exception e) {
-				System.out.println("> Error: " + e.getMessage());
-			}
-			return resul;
+			String sql = "UPDATE reparacion SET descripcion = ?, fechaEntrada = ?, costeEstimado = ?, estado = ? WHERE idReparacion = ?;";
+			PreparedStatement pst = conexion.prepareStatement(sql);
+
+			pst.setString(1, r.getDescripcion());
+			pst.setDate(2, java.sql.Date.valueOf(r.getFechaEntrada()));
+			pst.setDouble(3, r.getCosteEstimado());
+			pst.setString(4, r.getEstado());
+			pst.setInt(5, r.getIdReparacion());
+
+			resul = pst.executeUpdate();
+			System.out.println("Resultado de inserción: " + resul);
+		} catch (SQLException e) {
+			System.out.println("> NOK: " + e.getMessage());
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
 		}
-
-	@Override
-	public int delete(Reparacion r) {
-			String sqlDelete = "DELETE FROM reparacion WHERE idReparacion = ?;";
-			try {
-				PreparedStatement pst = conexion.prepareStatement(sqlDelete);
-				pst.setInt(1, r.getIdReparacion()); 
-				int filas = pst.executeUpdate();
-				
-				if (filas > 0) {
-					System.out.println("> OK. Reparacion con " + r.getIdReparacion() + " eliminada correctamente.");
-				} else {
-					System.out.println("> NOK. Persona con " + r.getIdReparacion() + " no se encuentra en la base de datos.");
-				}
-				
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return 0;
-		}
-	
-
-	@Override
-	public ArrayList<Reparacion> findall() {
-		// TODO Auto-generated method stub
-		return null;
+		return resul;
 	}
 
 	@Override
-	public Reparacion findByidReparacion(String idReparacion) {
-		// TODO Auto-generated method stub
-		return null;
+	public int delete(Reparacion r) {
+		String sqlDelete = "DELETE FROM reparacion WHERE idReparacion = ?;";
+		try {
+			PreparedStatement pst = conexion.prepareStatement(sqlDelete);
+			pst.setInt(1, r.getIdReparacion());
+			int filas = pst.executeUpdate();
+
+			if (filas > 0) {
+				System.out.println("> OK. Reparacion con " + r.getIdReparacion() + " eliminada correctamente.");
+			} else {
+				System.out
+						.println("> NOK. Persona con " + r.getIdReparacion() + " no se encuentra en la base de datos.");
+			}
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return 0;
+	}
+
+	@Override
+	public ArrayList<Reparacion> findall() {
+		ArrayList<Reparacion> reparaciones = new ArrayList<>();
+		String sql = "SELECT idReparacion, descripcion, fechaEntrada, costeEstimado, estado, vehiculoId, usuarioId FROM reparacion;";
+
+		try (PreparedStatement pst = conexion.prepareStatement(sql); ResultSet resul = pst.executeQuery()) {
+
+			while (resul.next()) {
+
+				Reparacion r = new Reparacion();
+				r.setIdReparacion(resul.getInt("idReparacion"));
+				r.setDescripcion(resul.getString("descripcion"));
+				r.setFechaEntrada(resul.getDate("fechaEntrada").toLocalDate());
+				r.setCosteEstimado(resul.getDouble("costeEstimado"));
+				r.setEstado(resul.getString("estado"));
+				r.setVehiculoId(resul.getInt("vehiculoId"));
+				r.setUsuarioId(resul.getInt("usuarioId"));
+
+				reparaciones.add(r);
+			}
+		} catch (SQLException e) {
+			System.out.println("> NOK en findall: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return reparaciones;
+	}
+
+	@Override
+	public Reparacion findByidReparacion(int idReparacion) {
+		 Reparacion reparacion = null;
+		    String sql = "SELECT idReparacion, descripcion, fechaEntrada, costeEstimado, estado, vehiculoId, usuarioId FROM reparacion WHERE idReparacion = ?;";
+		    
+		    try (PreparedStatement pst = conexion.prepareStatement(sql)) {
+		        
+		        pst.setInt(1, idReparacion);
+		        
+		        try (ResultSet resul = pst.executeQuery()) {
+		            if (resul.next()) {
+		            	reparacion = new Reparacion();
+		            	reparacion.setIdReparacion(resul.getInt("idReparacion"));
+		            	reparacion.setDescripcion(resul.getString("descripcion"));
+		            	reparacion.setFechaEntrada(resul.getDate("fechaEntrada").toLocalDate());
+		            	reparacion.setCosteEstimado(resul.getDouble("costeEstimado"));
+		            	reparacion.setEstado(resul.getString("estado"));
+		            	reparacion.setVehiculoId(resul.getInt("vehiculoId"));
+		            	reparacion.setVehiculoId(resul.getInt("usuarioId"));
+		            }
+		        }
+		    } catch (SQLException e) {
+		        System.out.println("> NOK en findByDni: " + e.getMessage());
+		        e.printStackTrace();
+		    }
+		    return reparacion;
 	}
 
 }
