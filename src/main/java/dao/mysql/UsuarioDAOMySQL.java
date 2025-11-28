@@ -118,13 +118,13 @@ public class UsuarioDAOMySQL implements UsuarioDAO {
 		}
 
 		@Override
-		public Usuario findByNombre(String nombreUsuario) {
+		public Usuario findByDni(String dni) {
 			Usuario usuario = null;
-	        String sql = "SELECT idUsuario, nombreUsuario, dni, password, rol FROM usuario WHERE nombreUsuario = ?;";
+	        String sql = "SELECT idUsuario, nombreUsuario, dni, password, rol FROM usuario WHERE dni = ?;";
 	        
 	        try (PreparedStatement pst = conexion.prepareStatement(sql)) {
 	            
-	            pst.setString(1, nombreUsuario);
+	            pst.setString(1, dni);
 	            
 	            try (ResultSet resul = pst.executeQuery()) {
 	                if (resul.next()) {
@@ -139,7 +139,34 @@ public class UsuarioDAOMySQL implements UsuarioDAO {
 	                }
 	            }
 	        } catch (SQLException e) {
-	            System.out.println("> NOK en findByNombreUsuario: " + e.getMessage());
+	            System.out.println("> NOK en findByDni: " + e.getMessage());
+	            e.printStackTrace();
+	        }
+	        return usuario;
+	    }
+		@Override
+		public Usuario findById(int id) {
+			Usuario usuario = null;
+	        String sql = "SELECT idUsuario, nombreUsuario, dni, password, rol FROM usuario WHERE dni = ?;";
+	        
+	        try (PreparedStatement pst = conexion.prepareStatement(sql)) {
+	            
+	            pst.setInt(1, id);
+	            
+	            try (ResultSet resul = pst.executeQuery()) {
+	                if (resul.next()) {
+	                    usuario = new Usuario();
+	                    
+	                    
+	                    usuario.setIdUsuario(resul.getInt("idUsuario"));
+	                    usuario.setDni(resul.getString("dni"));
+	                    usuario.setNombreUsuario(resul.getString("nombreUsuario"));
+	                    usuario.setPassword(resul.getString("password"));
+	                    usuario.setRol(resul.getString("rol"));
+	                }
+	            }
+	        } catch (SQLException e) {
+	            System.out.println("> NOK en findById: " + e.getMessage());
 	            e.printStackTrace();
 	        }
 	        return usuario;

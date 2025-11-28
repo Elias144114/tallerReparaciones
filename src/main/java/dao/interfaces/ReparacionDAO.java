@@ -10,6 +10,8 @@ public interface ReparacionDAO {
 	int update(Reparacion r);
 	int delete(Reparacion r);
 	ArrayList<Reparacion> findall();
-	Reparacion findByidReparacion(int idReparacion);
+	ArrayList<Reparacion> findByEstado(String estado);
+	Reparacion findByIdReparacion(int idReparacion);
+	
 }
 

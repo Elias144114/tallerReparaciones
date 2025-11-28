@@ -121,8 +121,8 @@ public class ReparacionDAOMySQL implements ReparacionDAO {
 	}
 
 	@Override
-	public Reparacion findByidReparacion(int idReparacion) {
-		 Reparacion reparacion = null;
+	public Reparacion findByIdReparacion(int idReparacion) {
+		 Reparacion r = null;
 		    String sql = "SELECT idReparacion, descripcion, fechaEntrada, costeEstimado, estado, vehiculoId, usuarioId FROM reparacion WHERE idReparacion = ?;";
 		    
 		    try (PreparedStatement pst = conexion.prepareStatement(sql)) {
@@ -131,21 +131,50 @@ public class ReparacionDAOMySQL implements ReparacionDAO {
 		        
 		        try (ResultSet resul = pst.executeQuery()) {
 		            if (resul.next()) {
-		            	reparacion = new Reparacion();
-		            	reparacion.setIdReparacion(resul.getInt("idReparacion"));
-		            	reparacion.setDescripcion(resul.getString("descripcion"));
-		            	reparacion.setFechaEntrada(resul.getDate("fechaEntrada").toLocalDate());
-		            	reparacion.setCosteEstimado(resul.getDouble("costeEstimado"));
-		            	reparacion.setEstado(resul.getString("estado"));
-		            	reparacion.setVehiculoId(resul.getInt("vehiculoId"));
-		            	reparacion.setVehiculoId(resul.getInt("usuarioId"));
+		            	r = new Reparacion();
+		            	r.setIdReparacion(resul.getInt("idReparacion"));
+		            	r.setDescripcion(resul.getString("descripcion"));
+		            	r.setFechaEntrada(resul.getDate("fechaEntrada").toLocalDate());
+		            	r.setCosteEstimado(resul.getDouble("costeEstimado"));
+		            	r.setEstado(resul.getString("estado"));
+		            	r.setVehiculoId(resul.getInt("vehiculoId"));
+		            	r.setVehiculoId(resul.getInt("usuarioId"));
 		            }
 		        }
 		    } catch (SQLException e) {
 		        System.out.println("> NOK en findByDni: " + e.getMessage());
 		        e.printStackTrace();
 		    }
-		    return reparacion;
+		    return r;
 	}
 
+	
+	@Override
+	public ArrayList<Reparacion> findByEstado(String estado) {
+	    ArrayList<Reparacion> reparaciones = new ArrayList<>();
+	    String sql = "SELECT * FROM reparacion WHERE estado = ? ORDER BY fechaEntrada DESC;";
+
+	    try (PreparedStatement pst = conexion.prepareStatement(sql)) {
+	        
+	        pst.setString(1, estado);
+	        
+	        try (ResultSet resul = pst.executeQuery()) {
+	            while (resul.next()) {
+	                Reparacion r = new Reparacion();
+	                r.setIdReparacion(resul.getInt("idReparacion"));
+	                r.setDescripcion(resul.getString("descripcion"));
+	                r.setFechaEntrada(resul.getDate("fechaEntrada").toLocalDate());
+	                r.setCosteEstimado(resul.getDouble("costeEstimado"));
+	                r.setEstado(resul.getString("estado"));
+	                r.setVehiculoId(resul.getInt("vehiculoId"));
+	                r.setUsuarioId(resul.getInt("usuarioId"));
+	                reparaciones.add(r);
+	            }
+	        }
+	    } catch (SQLException e) {
+	        System.out.println("> NOK en findByEstado: " + e.getMessage());
+	        e.printStackTrace();
+	    }
+	    return reparaciones;
+	}
 }
