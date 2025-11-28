@@ -301,6 +301,43 @@ public class ControladorTaller {
 
 		return resultado > 1;
 	}
+	
+	public boolean borrarReparacion(Reparacion r) {
+		Scanner sc = new Scanner(System.in);
+		String comprobarRol = getRol();
+		if (comprobarRol.equals("invitado")) {
+			System.out.println("Lo siento, no puedes borrar nada con tus permisos");
+			return false;
+		}
+
+		System.out.println("Id de la reparacion");
+		int idReparacion = sc.nextInt();
+		sc.nextLine();
+		boolean idValido = false;
+		while (!idValido) {
+
+			Reparacion ReparacionExistente = this.reparacionDAO.findByIdReparacion(idReparacion);
+
+			if (ReparacionExistente != null) {
+				idValido = true;
+				if (comprobarRol.equalsIgnoreCase("mecanico")) {
+					System.out.println("DNI existente: " + idReparacion + ", estas despedido");
+				  return this.reparacionDAO.delete(idReparacion) > 1;
+				} else if (comprobarRol.equalsIgnoreCase("administrador")) {
+					System.out.println("No se puede borrar a un admin");
+				}
+				}else {
+				System.err.println("No existe un usuario con el DNI " + idReparacion);
+				System.out.println("Por favor, introduce un DNI diferente:");
+				idReparacion = sc.nextInt();
+				sc.nextLine();
+
+			
+		}
+		}
+
+		return false;
+	}
 
 	public boolean registrarUsuario(Usuario u) {
 
@@ -386,18 +423,15 @@ public class ControladorTaller {
 				} else if (comprobarRol.equalsIgnoreCase("administrador")) {
 					System.out.println("No se puede borrar a un admin");
 				}
-				}else {
+			} else {
 				System.err.println("No existe un usuario con el DNI " + dni);
 				System.out.println("Por favor, introduce un DNI diferente:");
 				dni = sc.nextLine();
-			
-		}
+
+			}
 		}
 
 		return false;
 	}
-
-	// ELIAS, HAZ UN VER REPARACIONESFINALIZADAS (que ya tienes hecho) Y UN VER
-	// REPARACIONES A SECAS solo para Mecanico y Administrador
 
 }

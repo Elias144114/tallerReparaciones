@@ -8,7 +8,7 @@ import java.sql.Connection;
 public interface ReparacionDAO {
 	int insert(Reparacion r);
 	int update(Reparacion r);
-	int delete(Reparacion r);
+	int delete(int idReparacion);
 	ArrayList<Reparacion> findall();
 	ArrayList<Reparacion> findByEstado(String estado);
 	Reparacion findByIdReparacion(int idReparacion);

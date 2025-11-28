@@ -86,7 +86,8 @@ public class UsuarioDAOMySQL implements UsuarioDAO {
 	public ArrayList<Usuario> findall() {
 		ArrayList<Usuario> usuarios = new ArrayList<>();
 		String sql = "SELECT idUsuario, dni, nombreUsuario, password, rol FROM usuario;";
-		try (PreparedStatement pst = conexion.prepareStatement(sql); ResultSet resul = pst.executeQuery()) {
+		try (PreparedStatement pst = conexion.prepareStatement(sql); 
+				ResultSet resul = pst.executeQuery()) {
 
 			while (resul.next()) {
 				Usuario u = new Usuario();

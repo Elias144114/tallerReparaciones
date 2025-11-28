@@ -72,18 +72,18 @@ public class ReparacionDAOMySQL implements ReparacionDAO {
 	}
 
 	@Override
-	public int delete(Reparacion r) {
+	public int delete(int idReparacion) {
 		String sqlDelete = "DELETE FROM reparacion WHERE idReparacion = ?;";
 		try {
 			PreparedStatement pst = conexion.prepareStatement(sqlDelete);
-			pst.setInt(1, r.getIdReparacion());
+			pst.setInt(1, idReparacion);
 			int filas = pst.executeUpdate();
 
 			if (filas > 0) {
-				System.out.println("> OK. Reparacion con " + r.getIdReparacion() + " eliminada correctamente.");
+				System.out.println("> OK. Reparacion con " + idReparacion + " eliminada correctamente.");
 			} else {
 				System.out
-						.println("> NOK. Persona con " + r.getIdReparacion() + " no se encuentra en la base de datos.");
+						.println("> NOK. Persona con " + idReparacion + " no se encuentra en la base de datos.");
 			}
 
 		} catch (SQLException e) {
