@@ -41,46 +41,46 @@ class ClienteDAOTest {
 
 	@Test
 	void testListar() {
-//
-//		ArrayList<Cliente> clientes = clienteDAO.findall();
-//
-//		System.out.println(" ");
-//		System.out.println("           LISTADO DE CLIENTES              ");
-//		System.out.println(" ");
-//
-//		if (clientes.isEmpty()) {
-//			System.out.println("No hay clientes en la base de datos.");
-//			return;
-//		}
-//
-//		for (Cliente c : clientes) {
-//			System.out.println("ID: " + c.getIdCliente());
-//			System.out.println("  DNI: " + c.getDni());
-//			System.out.println("  Nombre: " + c.getNombre());
-//			System.out.println("  Teléfono: " + c.getTelefono());
-//			System.out.println("  Email: " + c.getEmail());
-//			System.out.println("");
-//		}
+
+		ArrayList<Cliente> clientes = clienteDAO.findall();
+
+		System.out.println(" ");
+		System.out.println("           LISTADO DE CLIENTES              ");
+		System.out.println(" ");
+
+		if (clientes.isEmpty()) {
+			System.out.println("No hay clientes en la base de datos.");
+			return;
+		}
+
+		for (Cliente c : clientes) {
+			System.out.println("ID: " + c.getIdCliente());
+			System.out.println("  DNI: " + c.getDni());
+			System.out.println("  Nombre: " + c.getNombre());
+			System.out.println("  Teléfono: " + c.getTelefono());
+			System.out.println("  Email: " + c.getEmail());
+			System.out.println("");
+		}
 	}
 
 	@Test
 	void testFindBy() {
-		String dniExistente = "45485547X";
-		System.out.println("Buscando DNI: " + dniExistente);
-
-		Cliente clienteEncontrado = clienteDAO.findByDni(dniExistente);
-
-		if (clienteEncontrado != null) {
-			System.out.println("Cliente encontrado:");
-			System.out.println("   Nombre: " + clienteEncontrado.getNombre());
-			System.out.println("   Teléfono: " + clienteEncontrado.getTelefono());
-		} else {
-			System.out.println("Cliente con DNI " + dniExistente + " no encontrado.");
-		}
-
-		System.out.println("");
-
-
+//		String dniExistente = "45485547X";
+//		System.out.println("Buscando DNI: " + dniExistente);
+//
+//		Cliente clienteEncontrado = clienteDAO.findByDni(dniExistente);
+//
+//		if (clienteEncontrado != null) {
+//			System.out.println("Cliente encontrado:");
+//			System.out.println("   Nombre: " + clienteEncontrado.getNombre());
+//			System.out.println("   Teléfono: " + clienteEncontrado.getTelefono());
+//		} else {
+//			System.out.println("Cliente con DNI " + dniExistente + " no encontrado.");
+//		}
+//
+//		System.out.println("");
+//
+//
 	}
 }
 

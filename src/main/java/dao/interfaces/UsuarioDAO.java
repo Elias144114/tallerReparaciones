@@ -2,6 +2,7 @@ package dao.interfaces;
 
 import java.util.ArrayList;
 
+import entities.Reparacion;
 import entities.Usuario;
 import java.sql.Connection;
 
@@ -11,5 +12,6 @@ public interface UsuarioDAO {
 	ArrayList<Usuario> findall();
 	Usuario findByDni(String dni);
 	Usuario findById(int id);
+	int delete(String dni);
 
 }

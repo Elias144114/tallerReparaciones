@@ -13,57 +13,49 @@ import entities.Reparacion;
 import entities.Usuario;
 import passwordUtils.PasswordUtils;
 
-
 public class UsuarioDAOMySQL implements UsuarioDAO {
 	private Connection conexion;
-	
+
 	public UsuarioDAOMySQL() {
 		conexion = DBCconnection.getInstance().getConnection();
 	}
 
-	
-
 	@Override
 	public boolean login(String dni, String password) {
-	    String sql = "SELECT password FROM usuario WHERE dni = ?";
-	    
-	    try (PreparedStatement pst = conexion.prepareStatement(sql)) {
-	        
-	        pst.setString(1, dni);
-	        
-	        
-	        try (ResultSet resultado = pst.executeQuery()) { 
+		String sql = "SELECT password FROM usuario WHERE dni = ?";
 
-	           
-	            if (resultado.next()) { 
-	                
-	                String passwordHashead = resultado.getString("password");
-	                
-	                if (PasswordUtils.verifyPassword(password, passwordHashead)) {
-	                    System.out.println("> Password correcta. Adelante");
-	                    return true; 
-	                } else {
-	                    System.out.println(">Contraseña incorrecta");
-	                    return false;
-	                }
-	            } else {
-	                System.out.println(">Usuario no encontrado");
-	                return false;
-	            }
-	        }
-	        
-	    } catch (SQLException e) {
-	        System.out.println("> NOK: " + e.getMessage());
-	        return false;
-	    } catch (Exception e) {
-	        System.out.println("> Error: " + e.getMessage());
-	        return false;
-	    }
+		try (PreparedStatement pst = conexion.prepareStatement(sql)) {
+
+			pst.setString(1, dni);
+
+			try (ResultSet resultado = pst.executeQuery()) {
+
+				if (resultado.next()) {
+
+					String passwordHashead = resultado.getString("password");
+
+					if (PasswordUtils.verifyPassword(password, passwordHashead)) {
+						System.out.println("> Password correcta. Adelante");
+						return true;
+					} else {
+						System.out.println(">Contraseña incorrecta");
+						return false;
+					}
+				} else {
+					System.out.println(">Usuario no encontrado");
+					return false;
+				}
+			}
+
+		} catch (SQLException e) {
+			System.out.println("> NOK: " + e.getMessage());
+			return false;
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
+			return false;
+		}
 	}
 
-	
-
-    
 	@Override
 	public int insert(Usuario u) {
 		int resul = 0;
@@ -89,86 +81,115 @@ public class UsuarioDAOMySQL implements UsuarioDAO {
 		}
 		return resul;
 	}
-	
 
-    @Override
-    public ArrayList<Usuario> findall() {
-    	 ArrayList<Usuario> usuarios = new ArrayList<>();
-		    String sql = "SELECT idUsuario, dni, nombreUsuario, password, rol FROM usuario;";
-		    try (PreparedStatement pst = conexion.prepareStatement(sql);
-		         ResultSet resul = pst.executeQuery()) {
+	@Override
+	public ArrayList<Usuario> findall() {
+		ArrayList<Usuario> usuarios = new ArrayList<>();
+		String sql = "SELECT idUsuario, dni, nombreUsuario, password, rol FROM usuario;";
+		try (PreparedStatement pst = conexion.prepareStatement(sql); ResultSet resul = pst.executeQuery()) {
 
-		        
-		        while (resul.next()) {
-		            Usuario u = new Usuario();
-		            u.setIdUsuario(resul.getInt("idUsuario"));
-		            u.setDni(resul.getString("dni"));
-		            u.setNombreUsuario(resul.getString("nombreUsuario"));
-		            u.setPassword(resul.getString("password"));
-		            u.setRol(resul.getString("rol"));
-		            
-		            
-		            usuarios.add(u);
-		        }
-		    } catch (SQLException e) {
-		        System.out.println("> NOK en findall: " + e.getMessage());
-		        e.printStackTrace();
-		    }
-		    return usuarios;
+			while (resul.next()) {
+				Usuario u = new Usuario();
+				u.setIdUsuario(resul.getInt("idUsuario"));
+				u.setDni(resul.getString("dni"));
+				u.setNombreUsuario(resul.getString("nombreUsuario"));
+				u.setPassword(resul.getString("password"));
+				u.setRol(resul.getString("rol"));
+
+				usuarios.add(u);
+			}
+		} catch (SQLException e) {
+			System.out.println("> NOK en findall: " + e.getMessage());
+			e.printStackTrace();
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
+
 		}
-
-		@Override
-		public Usuario findByDni(String dni) {
-			Usuario usuario = null;
-	        String sql = "SELECT idUsuario, nombreUsuario, dni, password, rol FROM usuario WHERE dni = ?;";
-	        
-	        try (PreparedStatement pst = conexion.prepareStatement(sql)) {
-	            
-	            pst.setString(1, dni);
-	            
-	            try (ResultSet resul = pst.executeQuery()) {
-	                if (resul.next()) {
-	                    usuario = new Usuario();
-	                    
-	                    
-	                    usuario.setIdUsuario(resul.getInt("idUsuario"));
-	                    usuario.setDni(resul.getString("dni"));
-	                    usuario.setNombreUsuario(resul.getString("nombreUsuario"));
-	                    usuario.setPassword(resul.getString("password"));
-	                    usuario.setRol(resul.getString("rol"));
-	                }
-	            }
-	        } catch (SQLException e) {
-	            System.out.println("> NOK en findByDni: " + e.getMessage());
-	            e.printStackTrace();
-	        }
-	        return usuario;
-	    }
-		@Override
-		public Usuario findById(int id) {
-			Usuario usuario = null;
-	        String sql = "SELECT idUsuario, nombreUsuario, dni, password, rol FROM usuario WHERE dni = ?;";
-	        
-	        try (PreparedStatement pst = conexion.prepareStatement(sql)) {
-	            
-	            pst.setInt(1, id);
-	            
-	            try (ResultSet resul = pst.executeQuery()) {
-	                if (resul.next()) {
-	                    usuario = new Usuario();
-	                    
-	                    
-	                    usuario.setIdUsuario(resul.getInt("idUsuario"));
-	                    usuario.setDni(resul.getString("dni"));
-	                    usuario.setNombreUsuario(resul.getString("nombreUsuario"));
-	                    usuario.setPassword(resul.getString("password"));
-	                    usuario.setRol(resul.getString("rol"));
-	                }
-	            }
-	        } catch (SQLException e) {
-	            System.out.println("> NOK en findById: " + e.getMessage());
-	            e.printStackTrace();
-	        }
-	        return usuario;
-	    }
+		return usuarios;
 	}
+
+	@Override
+	public Usuario findByDni(String dni) {
+		Usuario usuario = null;
+		String sql = "SELECT idUsuario, nombreUsuario, dni, password, rol FROM usuario WHERE dni = ?;";
+
+		try (PreparedStatement pst = conexion.prepareStatement(sql)) {
+
+			pst.setString(1, dni);
+
+			try (ResultSet resul = pst.executeQuery()) {
+				while (resul.next()) {
+					usuario = new Usuario();
+
+					usuario.setIdUsuario(resul.getInt("idUsuario"));
+					usuario.setDni(resul.getString("dni"));
+					usuario.setNombreUsuario(resul.getString("nombreUsuario"));
+					usuario.setPassword(resul.getString("password"));
+					usuario.setRol(resul.getString("rol"));
+				}
+			}
+		} catch (SQLException e) {
+			System.out.println("> NOK en findByDni: " + e.getMessage());
+			e.printStackTrace();
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
+
+		}
+		return usuario;
+	}
+
+	@Override
+	public Usuario findById(int id) {
+		Usuario usuario = null;
+		String sql = "SELECT idUsuario, nombreUsuario, dni, password, rol FROM usuario WHERE id = ?;";
+
+		try (PreparedStatement pst = conexion.prepareStatement(sql)) {
+
+			pst.setInt(1, id);
+
+			try (ResultSet resul = pst.executeQuery()) {
+				if (resul.next()) {
+					usuario = new Usuario();
+
+					usuario.setIdUsuario(resul.getInt("idUsuario"));
+					usuario.setDni(resul.getString("dni"));
+					usuario.setNombreUsuario(resul.getString("nombreUsuario"));
+					usuario.setPassword(resul.getString("password"));
+					usuario.setRol(resul.getString("rol"));
+				}
+			}
+		} catch (SQLException e) {
+			System.out.println("> NOK en findById: " + e.getMessage());
+			e.printStackTrace();
+		}catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
+
+		}
+		return usuario;
+	}
+	
+	
+	@Override
+	public int delete(String dni) {
+		String sqlDelete = "DELETE FROM usuario WHERE dni = ?;";
+		try {
+			PreparedStatement pst = conexion.prepareStatement(sqlDelete);
+			pst.setString(1, dni);
+			int filas = pst.executeUpdate();
+
+			if (filas > 0) {
+				System.out.println("> OK. Usuario con dni " + dni + " eliminada correctamente.");
+			} else {
+				System.out.println("> NOK. Usuario con dni " + dni + " no se encuentra en la base de datos.");
+			}
+
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		}catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
+
+		}
+		return 0;
+	}
+}
