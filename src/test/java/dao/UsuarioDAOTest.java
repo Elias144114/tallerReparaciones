@@ -35,8 +35,8 @@ class UsuarioDAOTest {
 	@Test
 	void testLogin() {
 //		// insert
-//		Usuario probarLogin = new Usuario(7, "Elias", "11111111P", "Contraseña", "Cliente");
-//		usuarioDAO.insert(probarLogin);
+		Usuario probarLogin = new Usuario(1, "Elias", "11111111P", "Contraseña", "administrador");
+		usuarioDAO.insert(probarLogin);
 //
 //		usuarioDAO.login("11111111P", "Contraseña");
 //
@@ -47,25 +47,25 @@ class UsuarioDAOTest {
 
 	@Test
 	void testListar() {
-		ArrayList<Usuario> usuarios = usuarioDAO.findall();
-
-		System.out.println(" ");
-		System.out.println("           LISTADO DE REPARACIONES              ");
-		System.out.println(" ");
-
-		if (usuarios.isEmpty()) {
-			System.out.println("No hay usuarios en la base de datos.");
-			return;
-		}
-
-		for (Usuario u : usuarios) {
-			System.out.println("ID: " + u.getIdUsuario());
-			System.out.println("  Dni: " + u.getDni());
-			System.out.println("  Nombre de usuario: " + u.getNombreUsuario());
-			System.out.println("  Contraseña: " + "Secreta");
-			System.out.println("  Rol: " + u.getRol());
-			System.out.println("");
-		}
+//		ArrayList<Usuario> usuarios = usuarioDAO.findall();
+//
+//		System.out.println(" ");
+//		System.out.println("           LISTADO DE REPARACIONES              ");
+//		System.out.println(" ");
+//
+//		if (usuarios.isEmpty()) {
+//			System.out.println("No hay usuarios en la base de datos.");
+//			return;
+//		}
+//
+//		for (Usuario u : usuarios) {
+//			System.out.println("ID: " + u.getIdUsuario());
+//			System.out.println("  Dni: " + u.getDni());
+//			System.out.println("  Nombre de usuario: " + u.getNombreUsuario());
+//			System.out.println("  Contraseña: " + "Secreta");
+//			System.out.println("  Rol: " + u.getRol());
+//			System.out.println("");
+//		}
 	}
 
 }

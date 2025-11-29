@@ -193,4 +193,28 @@ public class UsuarioDAOMySQL implements UsuarioDAO {
 		}
 		return 0;
 	}
+
+	@Override
+	public int update(Usuario u) {
+	    int resul = 0;
+	    try {
+	        String sql = "UPDATE usuario SET nombreUsuario = ?, password = ?, rol = ? WHERE dni = ?;";
+	        PreparedStatement pst = conexion.prepareStatement(sql);
+
+	        pst.setString(1, u.getNombreUsuario());
+	        pst.setString(2, u.getPassword());
+	        pst.setString(3, u.getRol());
+	        pst.setString(4, u.getDni());
+
+	        resul = pst.executeUpdate();
+	        System.out.println("Resultado de actualización: " + resul);
+
+	    } catch (SQLException e) {
+	        System.out.println("> NOK: " + e.getMessage());
+	    } catch (Exception e) {
+	        System.out.println("> Error: " + e.getMessage());
+	    }
+	    return resul;
+	}
+
 }

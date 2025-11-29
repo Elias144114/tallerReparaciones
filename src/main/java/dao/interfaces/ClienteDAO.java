@@ -11,5 +11,6 @@ public interface ClienteDAO {
 	int delete(String dni);
 	ArrayList<Cliente> findall();
 	Cliente findByDni(String dni);
+	Cliente findById(int id);
 
 }

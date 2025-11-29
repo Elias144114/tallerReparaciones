@@ -7,6 +7,7 @@ import java.util.Scanner;
 
 import dao.MySQLDAOFactory;
 import dao.interfaces.*;
+import entities.Cliente;
 import entities.Reparacion;
 import entities.Usuario;
 import entities.Vehiculo;
@@ -32,29 +33,33 @@ public class ControladorTaller {
 
 	private ControladorTaller() {
 		MySQLDAOFactory factory = new MySQLDAOFactory();
-
 		this.usuarioDAO = factory.getUsuarioDAO();
 		this.reparacionDAO = factory.getReparacionDAO();
 		this.clienteDAO = factory.getClienteDAO();
 		this.vehiculoDAO = factory.getVehiculoDAO();
 	}
 
-	// INICIAR SESION
-
+	// INICIO DE SESION
 	public boolean login(String dni, String password) {
-		Usuario u = usuarioDAO.findByDni(dni);
 		try {
-			if (u == null) {
+			Usuario usuario = usuarioDAO.findByDni(dni);
+
+			if (usuario == null) {
 				System.out.println("El usuario NO existe");
 				return false;
-			} else if (PasswordUtils.verifyPassword(password, u.getPassword())) {
-				this.usuarioLogueado = u;
+			} else if (PasswordUtils.verifyPassword(password, usuario.getPassword())) {
+				this.usuarioLogueado = usuario;
 				System.out.println("Nombre de usuario y contraseña correctas");
 				return true;
 			} else {
+				String comprobarRol = getRol();
+				if (comprobarRol.equals("invitado")) {
+					System.out.println("Lo siento, no puedes iniciar sesion con tus permisos");
+					return false;
+				}
 				return false;
-
 			}
+
 		} catch (Exception e) {
 			System.out.println("> Error en login: " + e.getMessage());
 			return false;
@@ -62,73 +67,24 @@ public class ControladorTaller {
 	}
 
 	public void logout() {
+
 		this.usuarioLogueado = null;
+
 	}
 
 	public boolean sesionActiva() {
+
 		return usuarioLogueado != null;
+
 	}
 
 	public Usuario getUsuarioLogueado() {
-		return usuarioLogueado;
-	}
-
-	// VER Y REGISTRAR REPARACIONES
-
-	public ArrayList<Reparacion> ReparacionesFinalizadas() {
-
-		ArrayList<Reparacion> reparaciones = reparacionDAO.findByEstado("Finalizada");
-
-		System.out.println(" ");
-		System.out.println("           LISTADO DE REPARACIONES FINALIZADAS              ");
-		System.out.println(" ");
-
-		if (reparaciones.isEmpty()) {
-			System.out.println("No hay reparaciones finalizadas en la base de datos.");
-
+		try {
+			return usuarioLogueado;
+		} catch (Exception e) {
+			System.err.println("Error obteniendo usuario logueado: " + e.getMessage());
+			return null;
 		}
-
-		for (Reparacion r : reparaciones) {
-			System.out.println("ID: " + r.getIdReparacion());
-			System.out.println("  Descripción: " + r.getDescripcion());
-			System.out.println("  Fecha de entrada: " + r.getFechaEntrada());
-			System.out.println("  Coste estimado: " + r.getCosteEstimado());
-			System.out.println("  Estado: " + r.getEstado());
-			System.out.println("  Id del Vehiculo: " + r.getVehiculoId());
-			System.out.println("  Id del Usuario: " + r.getUsuarioId());
-			System.out.println("");
-		}
-
-		return reparaciones;
-	}
-
-	// USARE ESTE METODO PARA QUE LOS QUE PUEDEN INICIAR SESION VEN TODAS LAS
-	// REPARACIONES
-	public ArrayList<Reparacion> Reparaciones() {
-
-		ArrayList<Reparacion> reparaciones = reparacionDAO.findall();
-
-		System.out.println(" ");
-		System.out.println("           LISTADO DE REPARACIONES              ");
-		System.out.println(" ");
-
-		if (reparaciones.isEmpty()) {
-			System.out.println("No hay reparaciones en la base de datos.");
-
-		}
-
-		for (Reparacion r : reparaciones) {
-			System.out.println("ID: " + r.getIdReparacion());
-			System.out.println("  Descripción: " + r.getDescripcion());
-			System.out.println("  Fecha de entrada: " + r.getFechaEntrada());
-			System.out.println("  Coste estimado: " + r.getCosteEstimado());
-			System.out.println("  Estado: " + r.getEstado());
-			System.out.println("  Id del Vehiculo: " + r.getVehiculoId());
-			System.out.println("  Id del Usuario: " + r.getUsuarioId());
-			System.out.println("");
-		}
-
-		return reparaciones;
 	}
 
 	public String getRol() {
@@ -140,298 +96,752 @@ public class ControladorTaller {
 			return "administrador";
 		}
 		return usuarioLogueado.getRol().toLowerCase().trim();
-		// Esto para evitar problemas si alguien pone "MECANICo", "meCanico" o lo que
-		// sea. Tambien quitamos espacios
+	}
+
+//REPARACIONES
+	public ArrayList<Reparacion> ReparacionesFinalizadas() {
+		try {
+			ArrayList<Reparacion> reparaciones = reparacionDAO.findByEstado("Finalizada");
+
+			System.out.println(" ");
+			System.out.println("           LISTADO DE REPARACIONES FINALIZADAS              ");
+			System.out.println(" ");
+
+			if (reparaciones.isEmpty()) {
+				System.out.println("No hay reparaciones finalizadas en la base de datos.");
+			}
+
+			for (Reparacion r : reparaciones) {
+				System.out.println("ID: " + r.getIdReparacion());
+				System.out.println("  Descripción: " + r.getDescripcion());
+				System.out.println("  Fecha de entrada: " + r.getFechaEntrada());
+				System.out.println("  Coste estimado: " + r.getCosteEstimado());
+				System.out.println("  Estado: " + r.getEstado());
+				System.out.println("  Id del Vehiculo: " + r.getVehiculoId());
+				System.out.println("  Id del Usuario: " + r.getUsuarioId());
+				System.out.println("");
+			}
+
+			return reparaciones;
+
+		} catch (Exception e) {
+			System.err.println(">Error mostrando reparaciones finalizadas: " + e.getMessage());
+			return new ArrayList<>();
+		}
 	}
 
 	public boolean registrarReparacion(Reparacion r) {
+		try {
+			Scanner sc = new Scanner(System.in);
 
-		Scanner sc = new Scanner(System.in);
-
-		String comprobarRol = getRol();
-		if (comprobarRol.equals("invitado")) {
-			System.out.println("Lo siento, no puedes registrar nada con tus permisos");
-			return false;
-		}
-
-		System.out.println("Id de la reparacion");
-		int idReparacion = sc.nextInt();
-		sc.nextLine();
-
-		System.out.println("Descripcion de la reparacion");
-		String descripcion = sc.nextLine();
-
-		System.out.println("Fecha de entrada (formato YYYY-MM-DD, ej: 2025-11-28):");
-		LocalDate fechaEntrada = LocalDate.parse(sc.nextLine());
-
-		System.out.println("Coste estimado de la reparacion");
-		Double costeEstimado = sc.nextDouble();
-		sc.nextLine();
-
-		String estado = "";
-		boolean estadoValido = false;
-		while (!estadoValido) {
-			System.out.println("Estado (no iniciada, en curso, finalizada):");
-			estado = sc.nextLine().toLowerCase().trim();
-
-			if (estado.equals("no iniciada") || estado.equals("en curso") || estado.equals("finalizada")) {
-				estadoValido = true;
-			} else {
-				System.err.println("El estado '" + estado + "' no es válido");
-				System.out.println("Por favor, introduce uno de los permitidos");
+			String comprobarRol = getRol();
+			if (comprobarRol.equals("invitado")) {
+				System.out.println("Lo siento, no puedes registrar nada con tus permisos");
+				return false;
 			}
-		}
 
-		int vehiculoId = 0;
-		boolean vehiculoValido = false;
-		while (!vehiculoValido) {
-			System.out.println("Id del vehiculo");
-
-			int idLeido = sc.nextInt();
+			System.out.println("Id de la reparacion");
+			int idReparacion = sc.nextInt();
 			sc.nextLine();
 
-			Vehiculo vehiculoExistente = this.vehiculoDAO.findByid(idLeido);
-
-			if (vehiculoExistente != null) {
-				vehiculoId = idLeido;
-				vehiculoValido = true;
-				System.out.println("Vehículo encontrado: " + vehiculoExistente.getMatricula());
-			} else {
-				System.err.println("No existe ningún vehículo con el ID " + idLeido);
+			if (this.reparacionDAO.findByIdReparacion(idReparacion) != null) {
+				System.err.println("Ya existe una reparación con el id " + idReparacion);
+				return false;
 			}
-		}
 
-		int usuarioId = 0;
-		boolean usuarioValido = false;
-		while (!usuarioValido) {
-			System.out.println("Id del usuario al que se asigna la reparación:");
+			System.out.println("Descripcion de la reparacion");
+			String descripcion = sc.nextLine();
 
-			int idUsuarioLeido = sc.nextInt();
-			sc.nextLine();
+			System.out.println("Fecha de entrada (formato YYYY-MM-DD, ej: 2025-11-28):");
+			LocalDate fechaEntrada = LocalDate.parse(sc.nextLine());
 
-			Usuario usuarioExistente = this.usuarioDAO.findById(idUsuarioLeido);
+			System.out.println("Coste estimado de la reparacion");
+			Double costeEstimado = sc.nextDouble();
+			
 
-			if (usuarioExistente != null && usuarioExistente.getRol().equalsIgnoreCase("mecanico")) {
-				usuarioId = idUsuarioLeido;
-				usuarioValido = true;
-				System.out.println("Reparación asignada a: " + usuarioExistente.getNombreUsuario()); // Lo hice así
-																										// porque seria
-																										// raro que un
-																										// Administrador
-																										// tuviera una
-																										// reparacion
-																										// asignada
-			} else {
-				System.err.println("No existe ningún usuario con el ID " + idUsuarioLeido);
-			}
-		}
+			String estado = "";
+			boolean estadoValido = false;
+			while (!estadoValido) {
+				System.out.println("Estado (no iniciada, en curso, finalizada):");
+				estado = sc.nextLine().toLowerCase().trim();
 
-		r.setIdReparacion(idReparacion);
-		r.setDescripcion(descripcion);
-		r.setCosteEstimado(costeEstimado);
-		r.setFechaEntrada(fechaEntrada);
-		r.setEstado(estado);
-		r.setVehiculoId(vehiculoId);
-		r.setUsuarioId(usuarioId);
-
-		int resultado = this.reparacionDAO.insert(r);
-		return resultado > 1;
-	}
-
-	public boolean actualizarReparacion(Reparacion r) {
-
-		Scanner sc = new Scanner(System.in);
-		String comprobarRol = getRol();
-
-		if (comprobarRol.equals("invitado")) {
-			System.out.println("Lo siento, no puedes actualizar nada con tus permisos");
-			return false;
-		}
-
-		int idReparacion = 0;
-		boolean reparacionValida = false;
-		Reparacion reparacionExistente = null;
-
-		while (!reparacionValida) {
-			System.out.println("Id de la reparacion a actualizar:");
-
-			idReparacion = sc.nextInt();
-			sc.nextLine();
-
-			reparacionExistente = this.reparacionDAO.findByIdReparacion(idReparacion);
-
-			if (reparacionExistente != null) {
-				reparacionValida = true;
-				System.out.println("Reparación encontrada. Estado actual: " + reparacionExistente.getEstado());
-			} else {
-				System.err.println("No existe ninguna reparación con el ID " + idReparacion);
-			}
-		}
-
-		System.out.println("Nueva descripcion de la reparacion");
-		String descripcion = sc.nextLine();
-
-		System.out.println("Nueva fecha de entrada (formato YYYY-MM-DD, ej: 2025-11-28):");
-		LocalDate fechaEntrada = LocalDate.parse(sc.nextLine());
-
-		System.out.println("Nuevo coste estimado de la reparacion");
-		Double costeEstimado = sc.nextDouble();
-
-		String estado = "";
-		boolean estadoValido = false;
-		while (!estadoValido) {
-			System.out.println("Nuevo estado (no iniciada, en curso, finalizada):");
-			estado = sc.nextLine().toLowerCase().trim();
-
-			if (estado.equals("no iniciada") || estado.equals("en curso") || estado.equals("finalizada")) {
-				estadoValido = true;
-			} else {
-				System.err.println("El estado '" + estado + "' no es válido");
-				System.out.println("Por favor, introduce uno de los permitidos");
-			}
-		}
-
-		r.setIdReparacion(idReparacion);
-		r.setDescripcion(descripcion);
-		r.setCosteEstimado(costeEstimado);
-		r.setFechaEntrada(fechaEntrada);
-		r.setEstado(estado);
-
-		int resultado = this.reparacionDAO.update(r);
-
-		return resultado > 1;
-	}
-	
-	public boolean borrarReparacion(Reparacion r) {
-		Scanner sc = new Scanner(System.in);
-		String comprobarRol = getRol();
-		if (comprobarRol.equals("invitado")) {
-			System.out.println("Lo siento, no puedes borrar nada con tus permisos");
-			return false;
-		}
-
-		System.out.println("Id de la reparacion");
-		int idReparacion = sc.nextInt();
-		sc.nextLine();
-		boolean idValido = false;
-		while (!idValido) {
-
-			Reparacion ReparacionExistente = this.reparacionDAO.findByIdReparacion(idReparacion);
-
-			if (ReparacionExistente != null) {
-				idValido = true;
-				if (comprobarRol.equalsIgnoreCase("mecanico")) {
-					System.out.println("DNI existente: " + idReparacion + ", estas despedido");
-				  return this.reparacionDAO.delete(idReparacion) > 1;
-				} else if (comprobarRol.equalsIgnoreCase("administrador")) {
-					System.out.println("No se puede borrar a un admin");
+				if (estado.equals("no iniciada") || estado.equals("en curso") || estado.equals("finalizada")) {
+					estadoValido = true;
+				} else {
+					System.err.println("El estado " + estado + " no es válido");
+					System.out.println("Por favor, introduce uno de los permitidos");
 				}
-				}else {
-				System.err.println("No existe un usuario con el DNI " + idReparacion);
-				System.out.println("Por favor, introduce un DNI diferente:");
+			}
+
+			int vehiculoId = 0;
+			boolean vehiculoValido = false;
+			while (!vehiculoValido) {
+				System.out.println("Id del vehiculo");
+
+				int idLeido = sc.nextInt();
+				sc.nextLine();
+
+				Vehiculo vehiculoExistente = this.vehiculoDAO.findByid(idLeido);
+
+				if (vehiculoExistente != null) {
+					vehiculoId = idLeido;
+					vehiculoValido = true;
+					System.out.println("Vehículo con matricula " + vehiculoExistente.getMatricula() + " encontrado");
+				} else {
+					System.err.println("No existe ningún vehículo con el ID " + vehiculoId);
+				}
+			}
+
+			int usuarioId = 0;
+			boolean usuarioValido = false;
+			while (!usuarioValido) {
+				System.out.println("Id del usuario al que se asigna la reparación:");
+
+				int idUsuarioLeido = sc.nextInt();
+				sc.nextLine();
+
+				Usuario usuarioExistente = this.usuarioDAO.findById(idUsuarioLeido);
+				 
+				//Esto lo hice así por que diria yo que es raro que un administrador tenga una reparacion asignada
+				if (usuarioExistente != null && usuarioExistente.getRol().equalsIgnoreCase("mecanico")) {
+					usuarioId = idUsuarioLeido;
+					usuarioValido = true;
+					System.out.println("Reparación asignada a: " + usuarioExistente.getNombreUsuario());
+				} else {
+					System.err.println("No existe ningún usuario con el ID " + idUsuarioLeido);
+				}
+			}
+
+			r.setIdReparacion(idReparacion);
+			r.setDescripcion(descripcion);
+			r.setCosteEstimado(costeEstimado);
+			r.setFechaEntrada(fechaEntrada);
+			r.setEstado(estado);
+			r.setVehiculoId(vehiculoId);
+			r.setUsuarioId(usuarioId);
+
+			int resultado = this.reparacionDAO.insert(r);
+			return resultado > 0;
+
+		} catch (Exception e) {
+			System.err.println("Error registrando reparación: " + e.getMessage());
+			return false;
+		}
+	}
+
+//CAMBIAR ESTADO DE REPARACIONES
+	public boolean actualizarReparacion(Reparacion r) {
+		try {
+			Scanner sc = new Scanner(System.in);
+			String comprobarRol = getRol();
+
+			if (comprobarRol.equals("invitado")) {
+				System.out.println("Lo siento, no puedes actualizar nada con tus permisos");
+				return false;
+			}
+
+			int idReparacion = 0;
+			boolean reparacionValida = false;
+			Reparacion reparacionExistente = null;
+
+			while (!reparacionValida) {
+				System.out.println("Id de la reparacion a actualizar:");
+
 				idReparacion = sc.nextInt();
 				sc.nextLine();
 
-			
-		}
-		}
+				reparacionExistente = this.reparacionDAO.findByIdReparacion(idReparacion);
 
-		return false;
+				if (reparacionExistente != null) {
+					reparacionValida = true;
+					System.out.println("Reparación encontrada. Estado actual: " + reparacionExistente.getEstado());
+				} else {
+					System.err.println("No existe ninguna reparación con el ID " + idReparacion);
+				}
+			}
+
+			System.out.println("Nueva descripcion de la reparacion");
+			String descripcion = sc.nextLine();
+
+			System.out.println("Nueva fecha de entrada (formato YYYY-MM-DD, ej: 2025-11-28):");
+			LocalDate fechaEntrada = LocalDate.parse(sc.nextLine());
+
+			System.out.println("Nuevo coste estimado de la reparacion");
+			Double costeEstimado = sc.nextDouble();
+
+			String estado = "";
+			boolean estadoValido = false;
+			while (!estadoValido) {
+				System.out.println("Nuevo estado (no iniciada, en curso, finalizada):");
+				estado = sc.nextLine().toLowerCase().trim();
+
+				if (estado.equals("no iniciada") || estado.equals("en curso") || estado.equals("finalizada")) {
+					estadoValido = true;
+				} else {
+					System.err.println("El estado " + estado + " no es válido");
+					System.out.println("Por favor, introduce uno de los permitidos");
+				}
+			}
+
+			r.setIdReparacion(idReparacion);
+			r.setDescripcion(descripcion);
+			r.setCosteEstimado(costeEstimado);
+			r.setFechaEntrada(fechaEntrada);
+			r.setEstado(estado);
+
+			int resultado = this.reparacionDAO.update(r);
+
+			return resultado > 0;
+
+		} catch (Exception e) {
+			System.err.println("Error actualizando reparación: " + e.getMessage());
+			return false;
+		}
+	}
+
+//GESTION DE CLIENTES Y VEHICULOS POR EL ADMINISTRADOR	
+	public boolean registrarCliente(Cliente c) {
+		try {
+			Scanner sc = new Scanner(System.in);
+
+			System.out.println("Id del cliente:");
+			int idCliente = sc.nextInt();
+			sc.nextLine();
+
+			if (clienteDAO.findById(idCliente) != null) {
+				System.out.println("Ya existe un cliente con el id " + idCliente);
+				return false;
+			}
+
+			System.out.println("DNI del cliente:");
+			String dni = sc.nextLine();
+
+			if (clienteDAO.findByDni(dni) != null) {
+				System.out.println("Ya existe un cliente con el DNI " + dni);
+				return false;
+			}
+
+			System.out.println("Nombre:");
+			String nombre = sc.nextLine();
+
+			System.out.println("Teléfono:");
+			String telefono = sc.nextLine();
+
+			System.out.println("Email:");
+			String email = sc.nextLine();
+
+			c.setIdCliente(idCliente);
+			c.setDni(dni);
+			c.setNombre(nombre);
+			c.setTelefono(telefono);
+			c.setEmail(email);
+
+			int resultado = clienteDAO.insert(c);
+			return resultado > 0;
+
+		} catch (Exception e) {
+			System.err.println("Error registrando cliente: " + e.getMessage());
+			return false;
+		}
+	}
+
+	public boolean actualizarCliente(Cliente c) {
+		try {
+			Scanner sc = new Scanner(System.in);
+			String comprobarRol = getRol();
+
+			if (comprobarRol.equals("invitado")) {
+				System.out.println("Lo siento, no puedes actualizar nada con tus permisos");
+				return false;
+			}
+
+			String dni = "";
+			boolean clienteValido = false;
+			Cliente clienteExistente = null;
+
+			while (!clienteValido) {
+				System.out.println("DNI del cliente a actualizar:");
+				dni = sc.nextLine();
+
+				clienteExistente = clienteDAO.findByDni(dni);
+
+				if (clienteExistente != null) {
+					clienteValido = true;
+					System.out.println("Cliente encontrado: " + clienteExistente.getNombre());
+				} else {
+					System.err.println("No existe ningún cliente con el DNI " + dni);
+				}
+			}
+
+			System.out.println("Nuevo nombre:");
+			String nombre = sc.nextLine();
+
+			System.out.println("Nuevo teléfono:");
+			String telefono = sc.nextLine();
+
+			System.out.println("Nuevo email:");
+			String email = sc.nextLine();
+
+			c.setIdCliente(clienteExistente.getIdCliente());
+			c.setDni(dni);
+			c.setNombre(nombre);
+			c.setTelefono(telefono);
+			c.setEmail(email);
+
+			int resultado = clienteDAO.update(c);
+
+			return resultado > 0;
+
+		} catch (Exception e) {
+			System.err.println("Error actualizando cliente: " + e.getMessage());
+			return false;
+		}
+	}
+
+	public boolean borrarCliente() {
+		try {
+			Scanner sc = new Scanner(System.in);
+			String comprobarRol = getRol();
+
+			if (comprobarRol.equals("invitado")) {
+				System.out.println("Lo siento, no puedes borrar nada con tus permisos");
+				return false;
+			}
+
+			System.out.println("DNI del cliente:");
+			String dni = sc.nextLine();
+			boolean dniValido = false;
+
+			while (!dniValido) {
+				Cliente clienteExistente = this.clienteDAO.findByDni(dni);
+
+				if (clienteExistente != null) {
+					dniValido = true;
+
+					if (comprobarRol.equalsIgnoreCase("administrador")) {
+						System.out.println("Cliente encontrado: " + clienteExistente.getNombre() + ", borrando...");
+						return this.clienteDAO.delete(dni) > 0;
+					} else {
+						System.out.println("No tienes permisos para borrar clientes.");
+						return false;
+					}
+
+				} else {
+					System.err.println("No existe ningún cliente con el DNI " + dni);
+					System.out.println("Por favor, introduce un DNI diferente:");
+					dni = sc.nextLine();
+				}
+			}
+
+			return false;
+
+		} catch (Exception e) {
+			System.err.println("Error al borrar cliente: " + e.getMessage());
+			return false;
+		}
+	}
+
+	public boolean registrarVehiculo(Vehiculo v) {
+		try {
+			Scanner sc = new Scanner(System.in);
+
+			System.out.println("Id del vehículo:");
+			int idVehiculo = sc.nextInt();
+			sc.nextLine();
+
+			if (vehiculoDAO.findByid(idVehiculo) != null) {
+				System.out.println("Ya existe un vehículo con el id " + idVehiculo);
+				return false;
+			}
+
+			System.out.println("Matrícula del vehículo:");
+			String matricula = sc.nextLine();
+
+			if (vehiculoDAO.findByMatricula(matricula) != null) {
+				System.out.println("Ya existe un vehículo con la matrícula " + matricula);
+				return false;
+			}
+
+			System.out.println("Marca del Coche:");
+			String marca = sc.nextLine();
+
+			System.out.println("Modelo del Coche:");
+			String modelo = sc.nextLine();
+
+			System.out.println("Id del cliente:");
+			int clienteId = sc.nextInt();
+			sc.nextLine();
+
+			if (clienteDAO.findById(clienteId) == null) {
+			    System.out.println("No existe ningún cliente con el id " + clienteId);
+			    return false;
+			}
+
+
+			v.setIdVehiculo(idVehiculo);
+			v.setMatricula(matricula);
+			v.setMarca(marca);
+			v.setModelo(modelo);
+			v.setClienteId(clienteId);
+
+			int resultado = vehiculoDAO.insert(v);
+			return resultado > 0;
+
+		} catch (Exception e) {
+			System.err.println("Error registrando vehículo: " + e.getMessage());
+			return false;
+		}
+	}
+
+	public boolean actualizarVehiculo(Vehiculo v) {
+		try {
+			Scanner sc = new Scanner(System.in);
+			String comprobarRol = getRol();
+
+			if (comprobarRol.equals("invitado")) {
+				System.out.println("Lo siento, no puedes actualizar nada con tus permisos");
+				return false;
+			}
+
+			int idVehiculo = 0;
+			boolean vehiculoValido = false;
+			Vehiculo vehiculoExistente = null;
+
+			while (!vehiculoValido) {
+				System.out.println("Id del vehículo a actualizar:");
+				idVehiculo = sc.nextInt();
+				sc.nextLine();
+
+				vehiculoExistente = vehiculoDAO.findByid(idVehiculo);
+
+				if (vehiculoExistente != null) {
+					vehiculoValido = true;
+					System.out.println("Vehículo encontrado: " + vehiculoExistente.getMatricula());
+				} else {
+					System.err.println("No existe ningún vehículo con el ID " + idVehiculo);
+				}
+			}
+
+			System.out.println("Nueva matrícula:");
+			String matricula = sc.nextLine();
+
+			System.out.println("Nueva marca:");
+			String marca = sc.nextLine();
+
+			System.out.println("Nuevo modelo:");
+			String modelo = sc.nextLine();
+
+			System.out.println("Id del cliente propietario:");
+			int clienteId = sc.nextInt();
+			sc.nextLine();
+
+			if (clienteDAO.findById(clienteId) == null) {
+				System.out.println("No existe ningún cliente con el id " + clienteId);
+				return false;
+			}
+
+			v.setIdVehiculo(idVehiculo);
+			v.setMatricula(matricula);
+			v.setMarca(marca);
+			v.setModelo(modelo);
+			v.setClienteId(clienteId);
+
+			int resultado = vehiculoDAO.update(v);
+
+			return resultado > 0;
+
+		} catch (Exception e) {
+			System.err.println("Error actualizando vehículo: " + e.getMessage());
+			return false;
+		}
+	}
+
+	public boolean borrarVehiculo() {
+		try {
+			Scanner sc = new Scanner(System.in);
+			String comprobarRol = getRol();
+
+			if (comprobarRol.equals("invitado")) {
+				System.out.println("Lo siento, no puedes borrar nada con tus permisos");
+				return false;
+			}
+
+			System.out.println("Id del vehículo:");
+			int idVehiculo = sc.nextInt();
+			sc.nextLine();
+			boolean idValido = false;
+
+			while (!idValido) {
+				Vehiculo vehiculoExistente = this.vehiculoDAO.findByid(idVehiculo);
+
+				if (vehiculoExistente != null) {
+					idValido = true;
+
+					if (comprobarRol.equalsIgnoreCase("administrador")) {
+						System.out
+								.println("Vehículo encontrado: " + vehiculoExistente.getMatricula() + ", borrando...");
+						return this.vehiculoDAO.delete(vehiculoExistente) > 0;
+					} else {
+						System.out.println("No tienes permisos para borrar vehículos.");
+						return false;
+					}
+
+				} else {
+					System.err.println("No existe ningún vehículo con el ID " + idVehiculo);
+					System.out.println("Por favor, introduce un ID diferente:");
+					idVehiculo = sc.nextInt();
+					sc.nextLine();
+				}
+			}
+
+			return false;
+
+		} catch (Exception e) {
+			System.err.println("Error al borrar vehículo: " + e.getMessage());
+			return false;
+		}
+	}
+
+	public ArrayList<Reparacion> Reparaciones() {
+		try {
+			ArrayList<Reparacion> reparaciones = reparacionDAO.findall();
+
+			System.out.println(" ");
+			System.out.println("           LISTADO DE REPARACIONES              ");
+			System.out.println(" ");
+
+			if (reparaciones.isEmpty()) {
+				System.out.println("No hay reparaciones en la base de datos.");
+			}
+
+			for (Reparacion r : reparaciones) {
+				System.out.println("ID: " + r.getIdReparacion());
+				System.out.println("  Descripción: " + r.getDescripcion());
+				System.out.println("  Fecha de entrada: " + r.getFechaEntrada());
+				System.out.println("  Coste estimado: " + r.getCosteEstimado());
+				System.out.println("  Estado: " + r.getEstado());
+				System.out.println("  Id del Vehiculo: " + r.getVehiculoId());
+				System.out.println("  Id del Usuario: " + r.getUsuarioId());
+				System.out.println("");
+			}
+
+			return reparaciones;
+
+		} catch (Exception e) {
+			System.err.println("Error mostrando reparaciones: " + e.getMessage());
+			return new ArrayList<>();
+		}
+	}
+
+	public boolean borrarReparacion(Reparacion r) {
+		try {
+			Scanner sc = new Scanner(System.in);
+			String comprobarRol = getRol();
+			if (comprobarRol.equals("invitado")) {
+				System.out.println("Lo siento, no puedes borrar nada con tus permisos");
+				return false;
+			}
+
+			System.out.println("Id de la reparacion");
+			int idReparacion = sc.nextInt();
+			sc.nextLine();
+			boolean idValido = false;
+			while (!idValido) {
+
+				Reparacion ReparacionExistente = this.reparacionDAO.findByIdReparacion(idReparacion);
+
+				if (ReparacionExistente != null) {
+					idValido = true;
+					if (comprobarRol.equalsIgnoreCase("mecanico")) {
+						System.out.println("DNI existente: " + idReparacion + ", estas despedido");
+						return this.reparacionDAO.delete(idReparacion) > 0;
+					} else if (comprobarRol.equalsIgnoreCase("administrador")) {
+						System.out.println("No se puede borrar a un admin");
+					}
+				} else {
+					System.err.println("No existe un usuario con el DNI " + idReparacion);
+					System.out.println("Por favor, introduce un DNI diferente:");
+					idReparacion = sc.nextInt();
+					sc.nextLine();
+
+				}
+			}
+
+			return false;
+
+		} catch (Exception e) {
+			System.err.println("Error al borrar reparación: " + e.getMessage());
+			return false;
+		}
 	}
 
 	public boolean registrarUsuario(Usuario u) {
+		try {
+			Scanner sc = new Scanner(System.in);
+			String comprobarRol = getRol();
+			if (comprobarRol.equals("invitado") || comprobarRol.equals("mecanico")) {
+				System.out.println("Lo siento, no puedes hacer nada de esto con tus permisos");
+				return false;
+			}
 
-		Scanner sc = new Scanner(System.in);
-		String comprobarRol = getRol();
-		if (comprobarRol.equals("invitado")) {
-			System.out.println("Lo siento, no puedes registrar nada con tus permisos");
+			System.out.println("Id del usuario");
+			int idUsuario = sc.nextInt();
+			sc.nextLine();
+
+			System.out.println("Dni del usuario");
+			String dni = sc.nextLine();
+
+			System.out.println("Nombre del usuario");
+			String nombreUsuario = sc.nextLine();
+
+			System.out.println("Password del usuario");
+			String password = sc.nextLine();
+
+			String rol = "";
+			boolean rolValido = false;
+			while (!rolValido) {
+				System.out.println("Rol (mecanico, administrador):");
+				rol = sc.nextLine().toLowerCase().trim();
+
+				if (rol.equals("mecanico") || rol.equals("administrador")) {
+					rolValido = true;
+				} else {
+					System.err.println("El rol '" + rol + "' no es válido");
+					System.out.println("Por favor, introduce uno de los permitidos");
+				}
+			}
+
+			boolean dniValido = false;
+			while (!dniValido) {
+
+				Usuario usuarioExistente = this.usuarioDAO.findByDni(dni);
+
+				if (usuarioExistente == null) {
+					dniValido = true;
+					System.out.println("DNI válido: " + dni);
+				} else {
+					System.err.println("Ya existe un usuario con el DNI " + dni);
+					System.out.println("Por favor, introduce un DNI diferente:");
+					dni = sc.nextLine();
+				}
+			}
+
+			u.setIdUsuario(idUsuario);
+			u.setDni(dni);
+			u.setNombreUsuario(nombreUsuario);
+			u.setPassword(password);
+			u.setRol(rol);
+
+			int resultado = this.usuarioDAO.insert(u);
+			return resultado > 0;
+
+		} catch (Exception e) {
+			System.err.println("Error registrando usuario: " + e.getMessage());
 			return false;
 		}
+	}
 
-		System.out.println("Id del usuario");
-		int idUsuario = sc.nextInt();
-		sc.nextLine();
-
-		System.out.println("Dni del usuario");
-		String dni = sc.nextLine();
-
-		System.out.println("Nombre del usuario");
-		String nombreUsuario = sc.nextLine();
-
-		System.out.println("Password del usuario");
-		String password = sc.nextLine();
-
-		String rol = "";
-		boolean rolValido = false;
-		while (!rolValido) {
-			System.out.println("Rol (mecanico, administrador):");
-			rol = sc.nextLine().toLowerCase().trim();
-
-			if (rol.equals("mecanico") || rol.equals("administrador")) {
-				rolValido = true;
-			} else {
-				System.err.println("El rol '" + rol + "' no es válido");
-				System.out.println("Por favor, introduce uno de los permitidos");
+	public boolean actualizarUsuario(Usuario u) {
+		try {
+			Scanner sc = new Scanner(System.in);
+			String comprobarRol = getRol();
+			if (comprobarRol.equals("invitado") || comprobarRol.equals("mecanico")) {
+				System.out.println("Lo siento, no puedes hacer nada de esto con tus permisos");
+				return false;
 			}
-		}
 
-		boolean dniValido = false;
-		while (!dniValido) {
+			String dni = "";
+			boolean usuarioValido = false;
+			Usuario usuarioExistente = null;
 
-			Usuario usuarioExistente = this.usuarioDAO.findByDni(dni);
-
-			if (usuarioExistente == null) {
-				dniValido = true;
-				System.out.println("DNI válido: " + dni);
-			} else {
-				System.err.println("Ya existe un usuario con el DNI " + dni);
-				System.out.println("Por favor, introduce un DNI diferente:");
+			while (!usuarioValido) {
+				System.out.println("DNI del usuario a actualizar:");
 				dni = sc.nextLine();
+
+				usuarioExistente = usuarioDAO.findByDni(dni);
+
+				if (usuarioExistente != null) {
+					usuarioValido = true;
+					System.out.println("Usuario encontrado: " + usuarioExistente.getNombreUsuario());
+				} else {
+					System.err.println("No existe ningún usuario con el DNI " + dni);
+				}
 			}
+
+			System.out.println("Nuevo nombre del usuario:");
+			String nombreUsuario = sc.nextLine();
+
+			System.out.println("Nueva contraseña del usuario:");
+			String password = sc.nextLine();
+
+			String rol = "";
+			boolean rolValido = false;
+			while (!rolValido) {
+				System.out.println("Nuevo rol (mecanico, administrador):");
+				rol = sc.nextLine().toLowerCase().trim();
+
+				if (rol.equals("mecanico") || rol.equals("administrador")) {
+					rolValido = true;
+				} else {
+					System.err.println("El rol '" + rol + "' no es válido");
+					System.out.println("Por favor, introduce uno de los permitidos");
+				}
+			}
+
+			u.setIdUsuario(usuarioExistente.getIdUsuario());
+			u.setDni(dni);
+			u.setNombreUsuario(nombreUsuario);
+			u.setPassword(password);
+			u.setRol(rol);
+
+			int resultado = usuarioDAO.update(u);
+
+			return resultado > 0;
+
+		} catch (Exception e) {
+			System.err.println("Error actualizando usuario: " + e.getMessage());
+			return false;
 		}
-
-		u.setIdUsuario(idUsuario);
-		u.setDni(dni);
-		u.setNombreUsuario(nombreUsuario);
-		u.setPassword(password);
-		u.setRol(rol);
-
-		int resultado = this.usuarioDAO.insert(u);
-		return resultado > 1;
 	}
 
 	public boolean borrarUsuario(Usuario u) {
-		Scanner sc = new Scanner(System.in);
-		String comprobarRol = getRol();
-		if (comprobarRol.equals("invitado")) {
-			System.out.println("Lo siento, no puedes registrar nada con tus permisos");
+		try {
+			Scanner sc = new Scanner(System.in);
+			String comprobarRol = getRol();
+			if (comprobarRol.equals("invitado") || comprobarRol.equals("mecanico")) {
+				System.out.println("Lo siento, no puedes hacer nada de esto con tus permisos");
+				return false;
+			}
+
+			System.out.println("Dni del usuario");
+			String dni = sc.nextLine();
+			boolean dniValido = false;
+			while (!dniValido) {
+
+				Usuario usuarioExistente = this.usuarioDAO.findByDni(dni);
+
+				if (usuarioExistente != null) {
+					dniValido = true;
+					if (comprobarRol.equalsIgnoreCase("mecanico") || comprobarRol.equalsIgnoreCase("Administrador ")) {
+						System.out.println("DNI existente: " + dni + ", estas despedido");
+						return this.usuarioDAO.delete(dni) > 0;
+					} else if (comprobarRol.equalsIgnoreCase("administrador")) {
+						System.out.println("No se puede borrar a un admin");
+					}
+				} else {
+					System.err.println("No existe un usuario con el DNI " + dni);
+					System.out.println("Por favor, introduce un DNI diferente:");
+					dni = sc.nextLine();
+
+				}
+			}
+
+			return false;
+
+		} catch (Exception e) {
+			System.err.println("Error borrando usuario: " + e.getMessage());
 			return false;
 		}
-
-		System.out.println("Dni del usuario");
-		String dni = sc.nextLine();
-		boolean dniValido = false;
-		while (!dniValido) {
-
-			Usuario usuarioExistente = this.usuarioDAO.findByDni(dni);
-
-			if (usuarioExistente != null) {
-				dniValido = true;
-				if (comprobarRol.equalsIgnoreCase("mecanico")) {
-					System.out.println("DNI existente: " + dni + ", estas despedido");
-					return this.usuarioDAO.delete(dni) > 0;
-				} else if (comprobarRol.equalsIgnoreCase("administrador")) {
-					System.out.println("No se puede borrar a un admin");
-				}
-			} else {
-				System.err.println("No existe un usuario con el DNI " + dni);
-				System.out.println("Por favor, introduce un DNI diferente:");
-				dni = sc.nextLine();
-
-			}
-		}
-
-		return false;
 	}
 
 }

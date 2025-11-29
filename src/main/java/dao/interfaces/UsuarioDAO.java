@@ -13,5 +13,6 @@ public interface UsuarioDAO {
 	Usuario findByDni(String dni);
 	Usuario findById(int id);
 	int delete(String dni);
+	int update(Usuario u);
 
 }

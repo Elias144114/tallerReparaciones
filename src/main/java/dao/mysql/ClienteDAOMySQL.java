@@ -84,6 +84,9 @@ public class ClienteDAOMySQL implements ClienteDAO {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
+			
 		}
 		return 0;
 	}
@@ -110,6 +113,9 @@ public class ClienteDAOMySQL implements ClienteDAO {
 		} catch (SQLException e) {
 			System.out.println("> NOK en findall: " + e.getMessage());
 			e.printStackTrace();
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
+			
 		}
 		return clientes;
 	}
@@ -136,7 +142,41 @@ public class ClienteDAOMySQL implements ClienteDAO {
 		} catch (SQLException e) {
 			System.out.println("> NOK en findByDni: " + e.getMessage());
 			e.printStackTrace();
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
+			
+		}
+		return cliente;
+	}
+	
+	@Override
+	public Cliente findById(int id) {
+		Cliente cliente = null;
+		String sql = "SELECT idCliente, dni, nombre, telefono, email FROM cliente WHERE id = ?;";
+
+		try (PreparedStatement pst = conexion.prepareStatement(sql)) {
+
+			pst.setInt(1, id);
+
+			try (ResultSet resul = pst.executeQuery()) {
+				if (resul.next()) {
+					cliente = new Cliente();
+					cliente.setIdCliente(resul.getInt("idCliente"));
+					cliente.setDni(resul.getString("dni"));
+					cliente.setNombre(resul.getString("nombre"));
+					cliente.setTelefono(resul.getString("telefono"));
+					cliente.setEmail(resul.getString("email"));
+				}
+			}
+		} catch (SQLException e) {
+			System.out.println("> NOK en findByDni: " + e.getMessage());
+			e.printStackTrace();
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
+			
 		}
 		return cliente;
 	}
 }
+
+
