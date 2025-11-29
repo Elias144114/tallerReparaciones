@@ -1,0 +1,8 @@
+DNI: "11111111P" CONTRASEÑA: "Contraseña"
+Cree un administrador principal, que es capaz de crear Usuarios, ya sean mecánicos o administradores
+
+Para añadir reparaciones se necesitara tener un usuario Mecánico mínimo, mínimo un Vehículo y hacer que coincidan los id de estos
+Al igual que se necesitara tener un cliente creado para crear un Vehículo
+
+Al revés para borrar
+
