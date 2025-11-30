@@ -79,6 +79,10 @@ public class Reparacion {
 		this.usuarioId = usuarioId;
 	}
 
+	public Reparacion() {
+		// TODO Auto-generated constructor stub
+	}
+
 }
 
 

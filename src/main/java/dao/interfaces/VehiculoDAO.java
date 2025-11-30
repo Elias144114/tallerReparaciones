@@ -12,4 +12,5 @@ public interface VehiculoDAO {
 	int delete(Vehiculo v);
 	ArrayList<Vehiculo> findall();
 	Vehiculo findByMatricula(String Matricula);
+	Vehiculo findByid(int id);
 }

@@ -7,7 +7,11 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import com.mysql.cj.jdbc.MysqlDataSource;
-
+/**
+ * El metodo para conectar la base de datos al proyecto
+ *  
+ * @author Elias
+ */
 public class DBCconnection {
 	private static DBCconnection instance;
 
@@ -15,17 +19,13 @@ public class DBCconnection {
 
 	private DBCconnection() {
 		try {
-			// Instanciar un datasource con mysql para que nos devuelva una conexion
+	
 
-			// 1.1 Pasarle las propiedades a pelo
+
 			MysqlDataSource dataSource = new MysqlDataSource();
-//				dataSource.setServerName("localhost");
-//				dataSource.setPortNumber(3306);
-//				dataSource.setDatabaseName("prueba");
-//				dataSource.setUser("root");
-//				dataSource.setPassword("root");
 
-			// 1.2 Hacer con un FileInputStream
+
+			
 			Properties props = new Properties();
 			FileInputStream file = new FileInputStream("src\\main\\resources\\conexion.properties");
 			props.load(file);
@@ -35,9 +35,6 @@ public class DBCconnection {
 			dataSource.setPassword(props.getProperty("password"));
 			file.close();
 
-			// 1.3 Cargar manualmente el driver (NO ACONSEJADO)
-//				Class.forName("com.mysql.cj.jdbc.Driver");
-//				conexion = DriverManager.getConnection("jdbc:mysql://localhost/tallerdereparaciones", "root", "root");
 
 			// 1.4 Main
 			conexionMySQL = dataSource.getConnection();

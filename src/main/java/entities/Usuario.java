@@ -1,7 +1,7 @@
 package entities;
 
 public class Usuario {
-	public Usuario(int idUsuario, String dni, String nombreUsuario, String password, String rol) {
+	public Usuario(int idUsuario, String nombreUsuario, String dni, String password, String rol) {
 		this.idUsuario = idUsuario;
 		this.dni = dni;
 		this.nombreUsuario = nombreUsuario;
@@ -10,10 +10,25 @@ public class Usuario {
 	}
 	
 	
+	public Usuario() {
+		// TODO Auto-generated constructor stub
+	}
+
+
 	public int getIdUsuario() {
 		return idUsuario;
 	}
 	
+	public void setIdUsuario(int idUsuario) {
+		this.idUsuario = idUsuario;
+	}
+
+
+	public void setDni(String dni) {
+		this.dni = dni;
+	}
+
+
 	public String getDni() {
 		return dni;
 	}

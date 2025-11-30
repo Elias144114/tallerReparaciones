@@ -12,6 +12,10 @@ public class Vehiculo {
 		this.clienteId = clienteId;
 	}
 	
+	public Vehiculo() {
+		// TODO Auto-generated constructor stub
+	}
+
 	public int getIdVehiculo() {
 		return idVehiculo;
 	}

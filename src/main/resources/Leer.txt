@@ -1,0 +1,47 @@
+He creado varias reparaciones finalizadas para que las veas directamente y no las tengas que crear
+Si quieres probar a crear mas la siguiente id a las creadas será 5
+
+Cree un administrador principal, que es capaz de crear Usuarios, ya sean mecánicos o administradores
+DNI: "11111111P" CONTRASEÑA: "Contraseña"
+
+Usuario Mecánico numero uno (Usuario 2)
+DNI: "12345678A" CONTRASEÑA: "Jose1234"
+
+
+Cliente numero uno
+Id del cliente:
+1
+DNI del cliente:
+87654321A
+Nombre:
+Paco
+
+Vehículo numero uno
+Id del vehículo:
+1
+Matrícula del vehículo:
+7564 jkj
+Marca del Coche:
+Audi
+Modelo del Coche:
+A2
+Id del cliente:
+1
+
+Reparación principal
+Id de la reparacion
+1
+Descripcion de la reparacion
+Reparacion de prueba
+Fecha de entrada (formato YYYY-MM-DD, ej: 2025-11-28):
+2025-11-30
+Coste estimado de la reparacion
+110
+
+Estado (no iniciada, en curso, finalizada):
+no iniciada
+Id del vehiculo
+1
+Vehículo con matricula 7564 jkj encontrado
+Id del usuario al que se asigna la reparación:
+2
