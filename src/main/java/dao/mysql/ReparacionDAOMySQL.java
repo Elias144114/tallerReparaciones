@@ -18,7 +18,9 @@ public class ReparacionDAOMySQL implements ReparacionDAO {
 	public ReparacionDAOMySQL() {
 		conexion = DBCconnection.getInstance().getConnection();
 	}
-
+/**
+ * Sirve para insertar reparaciones en la base de datos
+ */
 	@Override
 	public int insert(Reparacion r) {
 		int resul = 0;
@@ -46,7 +48,9 @@ public class ReparacionDAOMySQL implements ReparacionDAO {
 		}
 		return resul;
 	}
-
+/**
+ * Sirve para actualizar los datos del reparaciones de la base de datos
+ */
 	@Override
 	public int update(Reparacion r) {
 		int resul = 0;
@@ -71,6 +75,9 @@ public class ReparacionDAOMySQL implements ReparacionDAO {
 		return resul;
 	}
 
+	/**
+	 * Sirve para borrar la base de datos
+	 */
 	@Override
 	public int delete(int idReparacion) {
 		String sqlDelete = "DELETE FROM reparacion WHERE idReparacion = ?;";
@@ -92,7 +99,9 @@ public class ReparacionDAOMySQL implements ReparacionDAO {
 		}
 		return 0;
 	}
-
+	/**
+	 * Sirve para encontrar TODAS las reparaciones 
+	 */
 	@Override
 	public ArrayList<Reparacion> findall() {
 		ArrayList<Reparacion> reparaciones = new ArrayList<>();
@@ -119,7 +128,9 @@ public class ReparacionDAOMySQL implements ReparacionDAO {
 		}
 		return reparaciones;
 	}
-
+	/**
+	 * Sirve para encontrar reparaciones por id
+	 */
 	@Override
 	public Reparacion findByIdReparacion(int idReparacion) {
 		 Reparacion r = null;
@@ -148,7 +159,9 @@ public class ReparacionDAOMySQL implements ReparacionDAO {
 		    return r;
 	}
 
-	
+	/**
+	 * Sirve para encontrar reparaciones por estado
+	 */
 	@Override
 	public ArrayList<Reparacion> findByEstado(String estado) {
 	    ArrayList<Reparacion> reparaciones = new ArrayList<>();

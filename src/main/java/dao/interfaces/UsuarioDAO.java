@@ -11,7 +11,7 @@ public interface UsuarioDAO {
 	int insert(Usuario u);
 	ArrayList<Usuario> findall();
 	Usuario findByDni(String dni);
-	Usuario findById(int id);
+	Usuario findById(int idUauario);
 	int delete(String dni);
 	int update(Usuario u);
 

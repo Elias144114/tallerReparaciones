@@ -1,21 +1,40 @@
 package controlador;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 import dao.MySQLDAOFactory;
-import dao.interfaces.*;
+import dao.interfaces.ClienteDAO;
+import dao.interfaces.ReparacionDAO;
+import dao.interfaces.UsuarioDAO;
+import dao.interfaces.VehiculoDAO;
 import entities.Cliente;
 import entities.Reparacion;
 import entities.Usuario;
 import entities.Vehiculo;
 import passwordUtils.PasswordUtils;
 
+/**
+ * Clase principal del controlador del taller.
+ * @author Elias
+ */
+
+/**
+ * Controlador principal del proyecto taller de reparaciones. Implementa el
+ * patrón Singleton para controlar el acceso a la lógica de negocio. Gestiona
+ * usuarios, clientes, vehículos y reparaciones y muestra estadísticas.
+ *
+ */
+
 public class ControladorTaller {
 
 	private static ControladorTaller instancia = null;
+
+	/**
+	 * Consigue una instancia unica
+	 */
 
 	public static ControladorTaller getInstance() {
 		if (instancia == null) {
@@ -24,6 +43,9 @@ public class ControladorTaller {
 		return instancia;
 	}
 
+	/**
+	 * Sirve para que el usuario se mantenga hasta que se cierre sesion
+	 */
 	private Usuario usuarioLogueado = null;
 
 	private final UsuarioDAO usuarioDAO;
@@ -31,6 +53,9 @@ public class ControladorTaller {
 	private final ClienteDAO clienteDAO;
 	private final VehiculoDAO vehiculoDAO;
 
+	/**
+	 * Podemos acceder a los metodos de los DAO
+	 */
 	private ControladorTaller() {
 		MySQLDAOFactory factory = new MySQLDAOFactory();
 		this.usuarioDAO = factory.getUsuarioDAO();
@@ -39,6 +64,13 @@ public class ControladorTaller {
 		this.vehiculoDAO = factory.getVehiculoDAO();
 	}
 
+	/**
+	 * Puedo Iniciar sesion y verificar la contraseña encriptada
+	 * 
+	 * @param dni      Sirve para añadir el Dni del Usuario
+	 * @param password La contraseña del usuario
+	 * @return un inicio de sesion correcto
+	 */
 	// INICIO DE SESION
 	public boolean login(String dni, String password) {
 		try {
@@ -55,6 +87,7 @@ public class ControladorTaller {
 				String comprobarRol = getRol();
 				if (comprobarRol.equals("invitado")) {
 					System.out.println("Lo siento, no puedes iniciar sesion con tus permisos");
+					System.out.println("");
 					return false;
 				}
 				return false;
@@ -66,11 +99,19 @@ public class ControladorTaller {
 		}
 	}
 
+	/**
+	 * Mira si la sesion se cierra
+	 */
+
 	public void logout() {
 
 		this.usuarioLogueado = null;
 
 	}
+
+	/**
+	 * Mira si la sesion esta activa
+	 */
 
 	public boolean sesionActiva() {
 
@@ -78,6 +119,9 @@ public class ControladorTaller {
 
 	}
 
+	/**
+	 * Te devuelve el Usuario logueado
+	 */
 	public Usuario getUsuarioLogueado() {
 		try {
 			return usuarioLogueado;
@@ -87,6 +131,11 @@ public class ControladorTaller {
 		}
 	}
 
+	/**
+	 * Pilla los roles posibles
+	 * 
+	 * @return el rol del usuario que se esta usando
+	 */
 	public String getRol() {
 		if (usuarioLogueado == null) {
 			return "invitado";
@@ -98,6 +147,11 @@ public class ControladorTaller {
 		return usuarioLogueado.getRol().toLowerCase().trim();
 	}
 
+	/**
+	 * Sirve para listar
+	 * 
+	 * @return las lista de todas las reparaciones finalizadas
+	 */
 //REPARACIONES
 	public ArrayList<Reparacion> ReparacionesFinalizadas() {
 		try {
@@ -130,9 +184,19 @@ public class ControladorTaller {
 		}
 	}
 
+	/**
+	 * Sirve para registrar la reparacion y pedir los datos por consola
+	 * 
+	 * @param r la reparacion registrada
+	 * @return la reparacion registrada
+	 */
 	public boolean registrarReparacion(Reparacion r) {
 		try {
 			Scanner sc = new Scanner(System.in);
+
+			if (r == null) {
+				r = new Reparacion();
+			}
 
 			String comprobarRol = getRol();
 			if (comprobarRol.equals("invitado")) {
@@ -152,12 +216,24 @@ public class ControladorTaller {
 			System.out.println("Descripcion de la reparacion");
 			String descripcion = sc.nextLine();
 
-			System.out.println("Fecha de entrada (formato YYYY-MM-DD, ej: 2025-11-28):");
-			LocalDate fechaEntrada = LocalDate.parse(sc.nextLine());
+			LocalDate fechaEntrada = null;
+			boolean fechaValida = false;
+
+			while (!fechaValida) {
+				System.out.println("Fecha de entrada (formato YYYY-MM-DD, ej: 2025-11-28):");
+				String input = sc.nextLine();
+				try {
+					fechaEntrada = LocalDate.parse(input);
+					fechaValida = true;
+				} catch (DateTimeParseException e) {
+					System.err.println(
+							"Formato de fecha incorrecto. Por favor, introduce una fecha válida en formato YYYY-MM-DD.");
+					System.out.println("");
+				}
+			}
 
 			System.out.println("Coste estimado de la reparacion");
 			Double costeEstimado = sc.nextDouble();
-			
 
 			String estado = "";
 			boolean estadoValido = false;
@@ -170,6 +246,7 @@ public class ControladorTaller {
 				} else {
 					System.err.println("El estado " + estado + " no es válido");
 					System.out.println("Por favor, introduce uno de los permitidos");
+					System.out.println("");
 				}
 			}
 
@@ -201,8 +278,9 @@ public class ControladorTaller {
 				sc.nextLine();
 
 				Usuario usuarioExistente = this.usuarioDAO.findById(idUsuarioLeido);
-				 
-				//Esto lo hice así por que diria yo que es raro que un administrador tenga una reparacion asignada
+
+				// Esto lo hice así por que diria yo que es raro que un administrador tenga una
+				// reparacion asignada
 				if (usuarioExistente != null && usuarioExistente.getRol().equalsIgnoreCase("mecanico")) {
 					usuarioId = idUsuarioLeido;
 					usuarioValido = true;
@@ -229,6 +307,12 @@ public class ControladorTaller {
 		}
 	}
 
+	/**
+	 * Se pueden actualizar las reparaciones
+	 * 
+	 * @param r
+	 * @return
+	 */
 //CAMBIAR ESTADO DE REPARACIONES
 	public boolean actualizarReparacion(Reparacion r) {
 		try {
@@ -299,6 +383,12 @@ public class ControladorTaller {
 		}
 	}
 
+	/**
+	 * Se registran los clientes como se registran las reparaciones
+	 * 
+	 * @param c
+	 * @return
+	 */
 //GESTION DE CLIENTES Y VEHICULOS POR EL ADMINISTRADOR	
 	public boolean registrarCliente(Cliente c) {
 		try {
@@ -345,6 +435,12 @@ public class ControladorTaller {
 		}
 	}
 
+	/**
+	 * Sirve para actualizar los clientes
+	 * 
+	 * @param c
+	 * @return
+	 */
 	public boolean actualizarCliente(Cliente c) {
 		try {
 			Scanner sc = new Scanner(System.in);
@@ -398,6 +494,11 @@ public class ControladorTaller {
 		}
 	}
 
+	/**
+	 * Sirve para actualizar clientes
+	 * 
+	 * @return
+	 */
 	public boolean borrarCliente() {
 		try {
 			Scanner sc = new Scanner(System.in);
@@ -441,6 +542,12 @@ public class ControladorTaller {
 		}
 	}
 
+	/**
+	 * Sirve para registrar un Vehiculo
+	 * 
+	 * @param v
+	 * @return
+	 */
 	public boolean registrarVehiculo(Vehiculo v) {
 		try {
 			Scanner sc = new Scanner(System.in);
@@ -473,10 +580,9 @@ public class ControladorTaller {
 			sc.nextLine();
 
 			if (clienteDAO.findById(clienteId) == null) {
-			    System.out.println("No existe ningún cliente con el id " + clienteId);
-			    return false;
+				System.out.println("No existe ningún cliente con el id " + clienteId);
+				return false;
 			}
-
 
 			v.setIdVehiculo(idVehiculo);
 			v.setMatricula(matricula);
@@ -493,6 +599,12 @@ public class ControladorTaller {
 		}
 	}
 
+	/**
+	 * Sirve para actualizar un vehiculo
+	 * 
+	 * @param v
+	 * @return
+	 */
 	public boolean actualizarVehiculo(Vehiculo v) {
 		try {
 			Scanner sc = new Scanner(System.in);
@@ -556,6 +668,11 @@ public class ControladorTaller {
 		}
 	}
 
+	/**
+	 * Sirve para borrar un vehiculo
+	 * 
+	 * @return
+	 */
 	public boolean borrarVehiculo() {
 		try {
 			Scanner sc = new Scanner(System.in);
@@ -602,6 +719,11 @@ public class ControladorTaller {
 		}
 	}
 
+	/**
+	 * Sirve para listar todas las reparaciones
+	 * 
+	 * @return
+	 */
 	public ArrayList<Reparacion> Reparaciones() {
 		try {
 			ArrayList<Reparacion> reparaciones = reparacionDAO.findall();
@@ -633,6 +755,12 @@ public class ControladorTaller {
 		}
 	}
 
+	/**
+	 * Sirve para borrar la reparacion
+	 * 
+	 * @param r
+	 * @return
+	 */
 	public boolean borrarReparacion(Reparacion r) {
 		try {
 			Scanner sc = new Scanner(System.in);
@@ -653,7 +781,7 @@ public class ControladorTaller {
 				if (ReparacionExistente != null) {
 					idValido = true;
 					if (comprobarRol.equalsIgnoreCase("mecanico")) {
-						System.out.println("DNI existente: " + idReparacion + ", estas despedido");
+						System.out.println("Id existente: " + idReparacion);
 						return this.reparacionDAO.delete(idReparacion) > 0;
 					} else if (comprobarRol.equalsIgnoreCase("administrador")) {
 						System.out.println("No se puede borrar a un admin");
@@ -675,6 +803,12 @@ public class ControladorTaller {
 		}
 	}
 
+	/**
+	 * Sirve para registrar los usuarios
+	 * 
+	 * @param u
+	 * @return
+	 */
 	public boolean registrarUsuario(Usuario u) {
 		try {
 			Scanner sc = new Scanner(System.in);
@@ -741,6 +875,12 @@ public class ControladorTaller {
 		}
 	}
 
+	/**
+	 * Sirve para actualizar usuarios
+	 * 
+	 * @param u
+	 * @return
+	 */
 	public boolean actualizarUsuario(Usuario u) {
 		try {
 			Scanner sc = new Scanner(System.in);
@@ -804,6 +944,12 @@ public class ControladorTaller {
 		}
 	}
 
+	/**
+	 * Sirve para borrar un usuario
+	 * 
+	 * @param u El usuario a borrar
+	 * @return Un delete para borrar al usuario
+	 */
 	public boolean borrarUsuario(Usuario u) {
 		try {
 			Scanner sc = new Scanner(System.in);
@@ -841,6 +987,66 @@ public class ControladorTaller {
 		} catch (Exception e) {
 			System.err.println("Error borrando usuario: " + e.getMessage());
 			return false;
+		}
+	}
+
+	/**
+	 * Estadisticas por estado
+	 */
+	public void estadisticaPorEstado() {
+		try {
+			ArrayList<Reparacion> reparaciones = reparacionDAO.findall();
+
+			int noIniciadas = 0;
+			int enCurso = 0;
+			int finalizadas = 0;
+
+			for (Reparacion r : reparaciones) {
+				String estado = r.getEstado().toLowerCase().trim();
+				if (estado.equals("no iniciada"))
+					noIniciadas++;
+				else if (estado.equals("en curso"))
+					enCurso++;
+				else if (estado.equals("finalizada"))
+					finalizadas++;
+			}
+
+			int total = noIniciadas + enCurso + finalizadas; // ← TODAS
+
+			System.out.println("    ESTADO DE REPARACIONES   ");
+			System.out.println("");
+			System.out.println(" Todas       : " + total);
+			System.out.println(" No iniciadas: " + noIniciadas);
+			System.out.println(" En curso    : " + enCurso);
+			System.out.println(" Finalizadas : " + finalizadas);
+			System.out.println("");
+
+		} catch (Exception e) {
+			System.err.println("Error dando reparaciones por estado: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Estadisticas por coste medio
+	 */
+	public void estadisticaCosteMedioReparaciones() {
+		try {
+			ArrayList<Reparacion> reparaciones = reparacionDAO.findall();
+			if (reparaciones.isEmpty()) {
+				System.out.println("No hay reparaciones registradas.");
+				return;
+			}
+			double suma = 0;
+			for (Reparacion r : reparaciones) {
+				if (r.getCosteEstimado() != null)
+					suma += r.getCosteEstimado();
+			}
+
+			double media = suma / reparaciones.size();
+			System.out.println("    COSTE MEDIO DE REPARACIONES    ");
+			System.out.println("Coste medio: " + media + " €");
+		} catch (Exception e) {
+			System.err.println("Error calculando coste medio: " + e.getMessage());
 		}
 	}
 

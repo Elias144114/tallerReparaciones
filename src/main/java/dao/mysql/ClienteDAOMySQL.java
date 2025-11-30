@@ -18,6 +18,9 @@ public class ClienteDAOMySQL implements ClienteDAO {
 		conexion = DBCconnection.getInstance().getConnection();
 	}
 
+	/**
+	 * Sirve para insertar clientes a la base de datos
+	 */
 	@Override
 	public int insert(Cliente c) {
 		int resul = 0;
@@ -43,7 +46,9 @@ public class ClienteDAOMySQL implements ClienteDAO {
 		}
 		return resul;
 	}
-
+/**
+ * Sirve para actualizar los datos del cliente en la base de datos
+ */
 	@Override
 	public int update(Cliente c) {
 		int resul = 0;
@@ -66,7 +71,9 @@ public class ClienteDAOMySQL implements ClienteDAO {
 		}
 		return resul;
 	}
-
+/**
+ * Sirve para borrar los clientes de la base de datos
+ */
 	@Override
 	public int delete(String dni) {
 		String sqlDelete = "DELETE FROM cliente WHERE dni = ?;";
@@ -86,21 +93,23 @@ public class ClienteDAOMySQL implements ClienteDAO {
 			e.printStackTrace();
 		} catch (Exception e) {
 			System.out.println("> Error: " + e.getMessage());
-			
+
 		}
 		return 0;
 	}
 
+	/**
+	 * Sirve para encontrar todos los clientes en la base de datos
+	 */
 	@Override
 	public ArrayList<Cliente> findall() {
 		ArrayList<Cliente> clientes = new ArrayList<>();
 		String sql = "SELECT idCliente, dni, nombre, telefono, email FROM cliente;";
-		try (PreparedStatement pst = conexion.prepareStatement(sql); 
-				ResultSet resul = pst.executeQuery()) {
+		try (PreparedStatement pst = conexion.prepareStatement(sql); ResultSet resul = pst.executeQuery()) {
 
 			// 1. Recorrer el ResultSet
 			while (resul.next()) {
-				
+
 				Cliente c = new Cliente();
 				c.setIdCliente(resul.getInt("idCliente"));
 				c.setDni(resul.getString("dni"));
@@ -115,11 +124,14 @@ public class ClienteDAOMySQL implements ClienteDAO {
 			e.printStackTrace();
 		} catch (Exception e) {
 			System.out.println("> Error: " + e.getMessage());
-			
+
 		}
 		return clientes;
 	}
 
+	/**
+	 * Sirve para encontrar clientes por dni
+	 */
 	@Override
 	public Cliente findByDni(String dni) {
 		Cliente cliente = null;
@@ -144,19 +156,22 @@ public class ClienteDAOMySQL implements ClienteDAO {
 			e.printStackTrace();
 		} catch (Exception e) {
 			System.out.println("> Error: " + e.getMessage());
-			
+
 		}
 		return cliente;
 	}
-	
+
+	/**
+	 * Sirve para encontrar clientes por id
+	 */
 	@Override
-	public Cliente findById(int id) {
+	public Cliente findById(int idCliente) {
 		Cliente cliente = null;
-		String sql = "SELECT idCliente, dni, nombre, telefono, email FROM cliente WHERE id = ?;";
+		String sql = "SELECT idCliente, dni, nombre, telefono, email FROM cliente WHERE idCliente = ?;";
 
 		try (PreparedStatement pst = conexion.prepareStatement(sql)) {
 
-			pst.setInt(1, id);
+			pst.setInt(1, idCliente);
 
 			try (ResultSet resul = pst.executeQuery()) {
 				if (resul.next()) {
@@ -173,10 +188,8 @@ public class ClienteDAOMySQL implements ClienteDAO {
 			e.printStackTrace();
 		} catch (Exception e) {
 			System.out.println("> Error: " + e.getMessage());
-			
+
 		}
 		return cliente;
 	}
 }
-
-

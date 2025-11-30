@@ -20,6 +20,11 @@ public class UsuarioDAOMySQL implements UsuarioDAO {
 		conexion = DBCconnection.getInstance().getConnection();
 	}
 
+	/**
+	 * El metodo para iniciar sesion
+	 * 
+	 * @author Elias
+	 */
 	@Override
 	public boolean login(String dni, String password) {
 		String sql = "SELECT password FROM usuario WHERE dni = ?";
@@ -56,6 +61,9 @@ public class UsuarioDAOMySQL implements UsuarioDAO {
 		}
 	}
 
+	/**
+	 * El metodo para insertar los datos a la base de datos
+	 */
 	@Override
 	public int insert(Usuario u) {
 		int resul = 0;
@@ -82,12 +90,15 @@ public class UsuarioDAOMySQL implements UsuarioDAO {
 		return resul;
 	}
 
+	/**
+	 * El metodo para encontrar todos los usuarios en la base de datos
+	 */
+
 	@Override
 	public ArrayList<Usuario> findall() {
 		ArrayList<Usuario> usuarios = new ArrayList<>();
 		String sql = "SELECT idUsuario, dni, nombreUsuario, password, rol FROM usuario;";
-		try (PreparedStatement pst = conexion.prepareStatement(sql); 
-				ResultSet resul = pst.executeQuery()) {
+		try (PreparedStatement pst = conexion.prepareStatement(sql); ResultSet resul = pst.executeQuery()) {
 
 			while (resul.next()) {
 				Usuario u = new Usuario();
@@ -109,6 +120,9 @@ public class UsuarioDAOMySQL implements UsuarioDAO {
 		return usuarios;
 	}
 
+	/**
+	 * El metodo para encontrar todos los usuarios por dni en la base de datos
+	 */
 	@Override
 	public Usuario findByDni(String dni) {
 		Usuario usuario = null;
@@ -139,14 +153,17 @@ public class UsuarioDAOMySQL implements UsuarioDAO {
 		return usuario;
 	}
 
+	/**
+	 * El metodo para encontrar todos los usuarios por id en la base de datos
+	 */
 	@Override
-	public Usuario findById(int id) {
+	public Usuario findById(int idUsuario) {
 		Usuario usuario = null;
-		String sql = "SELECT idUsuario, nombreUsuario, dni, password, rol FROM usuario WHERE id = ?;";
+		String sql = "SELECT idUsuario, nombreUsuario, dni, password, rol FROM usuario WHERE idUsuario = ?;";
 
 		try (PreparedStatement pst = conexion.prepareStatement(sql)) {
 
-			pst.setInt(1, id);
+			pst.setInt(1, idUsuario);
 
 			try (ResultSet resul = pst.executeQuery()) {
 				if (resul.next()) {
@@ -162,14 +179,16 @@ public class UsuarioDAOMySQL implements UsuarioDAO {
 		} catch (SQLException e) {
 			System.out.println("> NOK en findById: " + e.getMessage());
 			e.printStackTrace();
-		}catch (Exception e) {
+		} catch (Exception e) {
 			System.out.println("> Error: " + e.getMessage());
 
 		}
 		return usuario;
 	}
-	
-	
+
+	/**
+	 * Sirve para borrar usuarios en la base de datos
+	 */
 	@Override
 	public int delete(String dni) {
 		String sqlDelete = "DELETE FROM usuario WHERE dni = ?;";
@@ -185,36 +204,39 @@ public class UsuarioDAOMySQL implements UsuarioDAO {
 			}
 
 		} catch (SQLException e) {
-			
+
 			e.printStackTrace();
-		}catch (Exception e) {
+		} catch (Exception e) {
 			System.out.println("> Error: " + e.getMessage());
 
 		}
 		return 0;
 	}
 
+	/**
+	 * Sirve para actualizar datos del usuario de la base de datos
+	 */
 	@Override
 	public int update(Usuario u) {
-	    int resul = 0;
-	    try {
-	        String sql = "UPDATE usuario SET nombreUsuario = ?, password = ?, rol = ? WHERE dni = ?;";
-	        PreparedStatement pst = conexion.prepareStatement(sql);
+		int resul = 0;
+		try {
+			String sql = "UPDATE usuario SET nombreUsuario = ?, password = ?, rol = ? WHERE dni = ?;";
+			PreparedStatement pst = conexion.prepareStatement(sql);
 
-	        pst.setString(1, u.getNombreUsuario());
-	        pst.setString(2, u.getPassword());
-	        pst.setString(3, u.getRol());
-	        pst.setString(4, u.getDni());
+			pst.setString(1, u.getNombreUsuario());
+			pst.setString(2, u.getPassword());
+			pst.setString(3, u.getRol());
+			pst.setString(4, u.getDni());
 
-	        resul = pst.executeUpdate();
-	        System.out.println("Resultado de actualización: " + resul);
+			resul = pst.executeUpdate();
+			System.out.println("Resultado de actualización: " + resul);
 
-	    } catch (SQLException e) {
-	        System.out.println("> NOK: " + e.getMessage());
-	    } catch (Exception e) {
-	        System.out.println("> Error: " + e.getMessage());
-	    }
-	    return resul;
+		} catch (SQLException e) {
+			System.out.println("> NOK: " + e.getMessage());
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
+		}
+		return resul;
 	}
 
 }

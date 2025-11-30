@@ -18,6 +18,9 @@ public class VehiculoDAOMySQL implements VehiculoDAO {
 		conexion = DBCconnection.getInstance().getConnection();
 	}
 
+	/**
+	 * Sirve para insertar vehiculos en la base de datos
+	 */
 	@Override
 	public int insert(Vehiculo v) {
 		int resul = 0;
@@ -44,6 +47,9 @@ public class VehiculoDAOMySQL implements VehiculoDAO {
 		return resul;
 	}
 
+	/**
+	 * Sirve para actualizar datos de las vehiculos en la base de datos
+	 */
 	@Override
 	public int update(Vehiculo v) {
 		int resul = 0;
@@ -66,6 +72,9 @@ public class VehiculoDAOMySQL implements VehiculoDAO {
 		return resul;
 	}
 
+	/**
+	 * Sirve para borrar vehiculos en la base de datos
+	 */
 	@Override
 	public int delete(Vehiculo v) {
 		String sqlDelete = "DELETE FROM vehiculo WHERE idVehiculo = ?;";
@@ -88,6 +97,9 @@ public class VehiculoDAOMySQL implements VehiculoDAO {
 		return 0;
 	}
 
+	/**
+	 * Listar todos los vehiculos
+	 */
 	@Override
 	public ArrayList<Vehiculo> findall() {
 		ArrayList<Vehiculo> vehiculos = new ArrayList<>();
@@ -112,6 +124,9 @@ public class VehiculoDAOMySQL implements VehiculoDAO {
 		return vehiculos;
 	}
 
+	/**
+	 * Listar todos los vehiculos por matricula
+	 */
 	@Override
 	public Vehiculo findByMatricula(String matricula) {
 		Vehiculo vehiculo = null;
@@ -139,6 +154,9 @@ public class VehiculoDAOMySQL implements VehiculoDAO {
 		return vehiculo;
 	}
 
+	/**
+	 * Listar todos los vehiculos por id
+	 */
 	@Override
 	public Vehiculo findByid(int id) {
 		Vehiculo vehiculo = null;
@@ -146,12 +164,12 @@ public class VehiculoDAOMySQL implements VehiculoDAO {
 
 		try (PreparedStatement pst = conexion.prepareStatement(sql)) {
 
-			pst.setInt(1, id); 
+			pst.setInt(1, id);
 
 			try (ResultSet resul = pst.executeQuery()) {
 				if (resul.next()) {
 					vehiculo = new Vehiculo();
-					
+
 					vehiculo.setIdVehiculo(resul.getInt("idVehiculo"));
 					vehiculo.setMatricula(resul.getString("matricula"));
 					vehiculo.setMarca(resul.getString("marca"));
