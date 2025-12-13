@@ -11,13 +11,16 @@ import dao.DBCconnection;
 import dao.interfaces.ClienteDAO;
 import entities.Cliente;
 
-public class ClienteDAOMySQL implements ClienteDAO{
-private Connection conexion;
-	
+public class ClienteDAOMySQL implements ClienteDAO {
+	private Connection conexion;
+
 	public ClienteDAOMySQL() {
 		conexion = DBCconnection.getInstance().getConnection();
 	}
-	
+
+	/**
+	 * Sirve para insertar clientes a la base de datos
+	 */
 	@Override
 	public int insert(Cliente c) {
 		int resul = 0;
@@ -31,7 +34,7 @@ private Connection conexion;
 			pst.setString(3, c.getNombre());
 			pst.setString(4, c.getTelefono());
 			pst.setString(5, c.getEmail());
-			
+
 			resul = pst.executeUpdate();
 			System.out.println("Resultado de inserción: " + resul);
 		} catch (SQLException e) {
@@ -43,91 +46,150 @@ private Connection conexion;
 		}
 		return resul;
 	}
-	
-	
+/**
+ * Sirve para actualizar los datos del cliente en la base de datos
+ */
 	@Override
 	public int update(Cliente c) {
+		int resul = 0;
 		try {
-			ResultSet resultado = null;
-			conexion.setAutoCommit(false);
-			String sql = "SELECT idEmpleado, nombre, edad, numTelefono FROM persona WHERE edad > ?";
 
-			PreparedStatement pst = conexion.prepareStatement(sql, ResultSet.TYPE_SCROLL_SENSITIVE, // Sensible a
-																									// cambios
-					ResultSet.CONCUR_UPDATABLE); // Permite modificar
+			String sql = "UPDATE cliente SET nombre = ?, telefono = ?, email = ? WHERE dni = ?;";
+			PreparedStatement pst = conexion.prepareStatement(sql);
 
-			pst.setInt(1, c.getIdCliente());
-			resultado = pst.executeQuery();
+			pst.setString(1, c.getNombre());
+			pst.setString(2, c.getTelefono());
+			pst.setString(3, c.getEmail());
+			pst.setString(4, c.getDni());
 
-			while (resultado.next()) {
-
-				pst.setString(1, c.getDni());
-		        pst.setString(2, c.getNombre());
-		        pst.setString(3, c.getTelefono());
-		        pst.setString(4, c.getEmail());
-		        pst.setInt(5, c.getIdCliente());
-				resultado.updateRow();
-
-			}
-
-			conexion.commit();
-			System.out.println("> Cambios confirmados correctamente");
-
+			resul = pst.executeUpdate();
+			System.out.println("Resultado de inserción: " + resul);
 		} catch (SQLException e) {
-			if (conexion != null) {
-				try {
-					conexion.rollback();
-					System.out.println("> Cambios confirmados correctamente");
-				} catch (SQLException e1) {
-					System.out.println("> NOK:" + e.getMessage());
-				}
-
-			}
-		} finally {
-			if (conexion != null) {
-				try {
-					conexion.setAutoCommit(true);
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
+			System.out.println("> NOK: " + e.getMessage());
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
 		}
-		return 0;
-
+		return resul;
 	}
-	
+/**
+ * Sirve para borrar los clientes de la base de datos
+ */
 	@Override
 	public int delete(String dni) {
 		String sqlDelete = "DELETE FROM cliente WHERE dni = ?;";
 		try {
 			PreparedStatement pst = conexion.prepareStatement(sqlDelete);
-			pst.setString(1, dni); 
+			pst.setString(1, dni);
 			int filas = pst.executeUpdate();
-			
+
 			if (filas > 0) {
 				System.out.println("> OK. Persona con dni " + dni + " eliminada correctamente.");
 			} else {
 				System.out.println("> NOK. Persona con dni " + dni + " no se encuentra en la base de datos.");
 			}
-			
+
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
+
 		}
 		return 0;
 	}
-	
-	  @Override
-	    public ArrayList<Cliente> findall() {
-	        // Código JDBC para listar todos los Clientes
-	        return new ArrayList<>(); // temporal
-	    }
-	
-	  @Override
-	    public Cliente findByDni(String dni) {
-	        // Código JDBC para buscar usuario por nombre
-	        return null; // temporal
-	    }
 
+	/**
+	 * Sirve para encontrar todos los clientes en la base de datos
+	 */
+	@Override
+	public ArrayList<Cliente> findall() {
+		ArrayList<Cliente> clientes = new ArrayList<>();
+		String sql = "SELECT idCliente, dni, nombre, telefono, email FROM cliente;";
+		try (PreparedStatement pst = conexion.prepareStatement(sql); ResultSet resul = pst.executeQuery()) {
+
+			// 1. Recorrer el ResultSet
+			while (resul.next()) {
+
+				Cliente c = new Cliente();
+				c.setIdCliente(resul.getInt("idCliente"));
+				c.setDni(resul.getString("dni"));
+				c.setNombre(resul.getString("nombre"));
+				c.setTelefono(resul.getString("telefono"));
+				c.setEmail(resul.getString("email"));
+
+				clientes.add(c);
+			}
+		} catch (SQLException e) {
+			System.out.println("> NOK en findall: " + e.getMessage());
+			e.printStackTrace();
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
+
+		}
+		return clientes;
+	}
+
+	/**
+	 * Sirve para encontrar clientes por dni
+	 */
+	@Override
+	public Cliente findByDni(String dni) {
+		Cliente cliente = null;
+		String sql = "SELECT idCliente, dni, nombre, telefono, email FROM cliente WHERE dni = ?;";
+
+		try (PreparedStatement pst = conexion.prepareStatement(sql)) {
+
+			pst.setString(1, dni);
+
+			try (ResultSet resul = pst.executeQuery()) {
+				if (resul.next()) {
+					cliente = new Cliente();
+					cliente.setIdCliente(resul.getInt("idCliente"));
+					cliente.setDni(resul.getString("dni"));
+					cliente.setNombre(resul.getString("nombre"));
+					cliente.setTelefono(resul.getString("telefono"));
+					cliente.setEmail(resul.getString("email"));
+				}
+			}
+		} catch (SQLException e) {
+			System.out.println("> NOK en findByDni: " + e.getMessage());
+			e.printStackTrace();
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
+
+		}
+		return cliente;
+	}
+
+	/**
+	 * Sirve para encontrar clientes por id
+	 */
+	@Override
+	public Cliente findById(int idCliente) {
+		Cliente cliente = null;
+		String sql = "SELECT idCliente, dni, nombre, telefono, email FROM cliente WHERE idCliente = ?;";
+
+		try (PreparedStatement pst = conexion.prepareStatement(sql)) {
+
+			pst.setInt(1, idCliente);
+
+			try (ResultSet resul = pst.executeQuery()) {
+				if (resul.next()) {
+					cliente = new Cliente();
+					cliente.setIdCliente(resul.getInt("idCliente"));
+					cliente.setDni(resul.getString("dni"));
+					cliente.setNombre(resul.getString("nombre"));
+					cliente.setTelefono(resul.getString("telefono"));
+					cliente.setEmail(resul.getString("email"));
+				}
+			}
+		} catch (SQLException e) {
+			System.out.println("> NOK en findByDni: " + e.getMessage());
+			e.printStackTrace();
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
+
+		}
+		return cliente;
+	}
 }

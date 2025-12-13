@@ -8,56 +8,62 @@ import java.util.ArrayList;
 
 import dao.DBCconnection;
 import dao.interfaces.UsuarioDAO;
+import entities.Cliente;
+import entities.Reparacion;
 import entities.Usuario;
 import passwordUtils.PasswordUtils;
 
-
 public class UsuarioDAOMySQL implements UsuarioDAO {
 	private Connection conexion;
-	
+
 	public UsuarioDAOMySQL() {
 		conexion = DBCconnection.getInstance().getConnection();
 	}
 
-	
-    @Override
-    public boolean login(String dni, String password) {
-    	String sql = "SELECT password FROM usuario WHERE dni = ?";
-    	
-    	try (PreparedStatement pst = conexion.prepareStatement(sql);){
-    		
-    		pst.setString(1, dni);
-    		
-    		
-    		ResultSet resultado = null;
-    		
-			String passwordHashead = resultado.getString("password");
-			if (PasswordUtils.verifyPassword(password, passwordHashead)) {
-				System.out.println("> Password correcta. Adelante");
-			
-			
-		}else if (!PasswordUtils.verifyPassword("dwes123", passwordHashead)){
-			System.out.println("Contraseña incorrecta");
-		}else {
-			System.out.println("Usuario no encontrado");
-		}
-			
+	/**
+	 * El metodo para iniciar sesion
+	 * 
+	 * @author Elias
+	 */
+	@Override
+	public boolean login(String dni, String password) {
+		String sql = "SELECT password FROM usuario WHERE dni = ?";
+
+		try (PreparedStatement pst = conexion.prepareStatement(sql)) {
+
+			pst.setString(1, dni);
+
+			try (ResultSet resultado = pst.executeQuery()) {
+
+				if (resultado.next()) {
+
+					String passwordHashead = resultado.getString("password");
+
+					if (PasswordUtils.verifyPassword(password, passwordHashead)) {
+						System.out.println("> Password correcta. Adelante");
+						return true;
+					} else {
+						System.out.println(">Contraseña incorrecta");
+						return false;
+					}
+				} else {
+					System.out.println(">Usuario no encontrado");
+					return false;
+				}
+			}
+
 		} catch (SQLException e) {
-		
 			System.out.println("> NOK: " + e.getMessage());
 			return false;
 		} catch (Exception e) {
 			System.out.println("> Error: " + e.getMessage());
 			return false;
 		}
-		return false;
-    	
-}
-	
+	}
 
-	
-
-    
+	/**
+	 * El metodo para insertar los datos a la base de datos
+	 */
 	@Override
 	public int insert(Usuario u) {
 		int resul = 0;
@@ -83,20 +89,154 @@ public class UsuarioDAOMySQL implements UsuarioDAO {
 		}
 		return resul;
 	}
-	
 
-    @Override
-    public ArrayList<Usuario> findall() {
-        // Código JDBC para listar todos los usuarios
-        return new ArrayList<>(); // temporal
-    }
+	/**
+	 * El metodo para encontrar todos los usuarios en la base de datos
+	 */
 
-    @Override
-    public Usuario findByNombre(String nombre) {
-        // Código JDBC para buscar usuario por nombre
-        return null; // temporal
-    }
+	@Override
+	public ArrayList<Usuario> findall() {
+		ArrayList<Usuario> usuarios = new ArrayList<>();
+		String sql = "SELECT idUsuario, dni, nombreUsuario, password, rol FROM usuario;";
+		try (PreparedStatement pst = conexion.prepareStatement(sql); ResultSet resul = pst.executeQuery()) {
 
+			while (resul.next()) {
+				Usuario u = new Usuario();
+				u.setIdUsuario(resul.getInt("idUsuario"));
+				u.setDni(resul.getString("dni"));
+				u.setNombreUsuario(resul.getString("nombreUsuario"));
+				u.setPassword(resul.getString("password"));
+				u.setRol(resul.getString("rol"));
 
-	
+				usuarios.add(u);
+			}
+		} catch (SQLException e) {
+			System.out.println("> NOK en findall: " + e.getMessage());
+			e.printStackTrace();
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
+
+		}
+		return usuarios;
+	}
+
+	/**
+	 * El metodo para encontrar todos los usuarios por dni en la base de datos
+	 */
+	@Override
+	public Usuario findByDni(String dni) {
+		Usuario usuario = null;
+		String sql = "SELECT idUsuario, nombreUsuario, dni, password, rol FROM usuario WHERE dni = ?;";
+
+		try (PreparedStatement pst = conexion.prepareStatement(sql)) {
+
+			pst.setString(1, dni);
+
+			try (ResultSet resul = pst.executeQuery()) {
+				while (resul.next()) {
+					usuario = new Usuario();
+
+					usuario.setIdUsuario(resul.getInt("idUsuario"));
+					usuario.setDni(resul.getString("dni"));
+					usuario.setNombreUsuario(resul.getString("nombreUsuario"));
+					usuario.setPassword(resul.getString("password"));
+					usuario.setRol(resul.getString("rol"));
+				}
+			}
+		} catch (SQLException e) {
+			System.out.println("> NOK en findByDni: " + e.getMessage());
+			e.printStackTrace();
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
+
+		}
+		return usuario;
+	}
+
+	/**
+	 * El metodo para encontrar todos los usuarios por id en la base de datos
+	 */
+	@Override
+	public Usuario findById(int idUsuario) {
+		Usuario usuario = null;
+		String sql = "SELECT idUsuario, nombreUsuario, dni, password, rol FROM usuario WHERE idUsuario = ?;";
+
+		try (PreparedStatement pst = conexion.prepareStatement(sql)) {
+
+			pst.setInt(1, idUsuario);
+
+			try (ResultSet resul = pst.executeQuery()) {
+				if (resul.next()) {
+					usuario = new Usuario();
+
+					usuario.setIdUsuario(resul.getInt("idUsuario"));
+					usuario.setDni(resul.getString("dni"));
+					usuario.setNombreUsuario(resul.getString("nombreUsuario"));
+					usuario.setPassword(resul.getString("password"));
+					usuario.setRol(resul.getString("rol"));
+				}
+			}
+		} catch (SQLException e) {
+			System.out.println("> NOK en findById: " + e.getMessage());
+			e.printStackTrace();
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
+
+		}
+		return usuario;
+	}
+
+	/**
+	 * Sirve para borrar usuarios en la base de datos
+	 */
+	@Override
+	public int delete(String dni) {
+		String sqlDelete = "DELETE FROM usuario WHERE dni = ?;";
+		try {
+			PreparedStatement pst = conexion.prepareStatement(sqlDelete);
+			pst.setString(1, dni);
+			int filas = pst.executeUpdate();
+
+			if (filas > 0) {
+				System.out.println("> OK. Usuario con dni " + dni + " eliminada correctamente.");
+			} else {
+				System.out.println("> NOK. Usuario con dni " + dni + " no se encuentra en la base de datos.");
+			}
+
+		} catch (SQLException e) {
+
+			e.printStackTrace();
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
+
+		}
+		return 0;
+	}
+
+	/**
+	 * Sirve para actualizar datos del usuario de la base de datos
+	 */
+	@Override
+	public int update(Usuario u) {
+		int resul = 0;
+		try {
+			String sql = "UPDATE usuario SET nombreUsuario = ?, password = ?, rol = ? WHERE dni = ?;";
+			PreparedStatement pst = conexion.prepareStatement(sql);
+
+			pst.setString(1, u.getNombreUsuario());
+			pst.setString(2, u.getPassword());
+			pst.setString(3, u.getRol());
+			pst.setString(4, u.getDni());
+
+			resul = pst.executeUpdate();
+			System.out.println("Resultado de actualización: " + resul);
+
+		} catch (SQLException e) {
+			System.out.println("> NOK: " + e.getMessage());
+		} catch (Exception e) {
+			System.out.println("> Error: " + e.getMessage());
+		}
+		return resul;
+	}
+
 }
